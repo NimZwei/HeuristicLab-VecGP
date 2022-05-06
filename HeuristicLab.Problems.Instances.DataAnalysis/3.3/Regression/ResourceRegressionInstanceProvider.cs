@@ -35,19 +35,13 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
     public override IRegressionProblemData LoadData(IDataDescriptor id) {
       var descriptor = (ResourceRegressionDataDescriptor)id;
 
-      var instanceArchiveName = GetResourceName(FileName + @"\.zip");
-      using (var instancesZipFile = new ZipArchive(GetType().Assembly.GetManifestResourceStream(instanceArchiveName), ZipArchiveMode.Read)) {
+      using (var instancesZipFile = new ZipArchive(OpenResourceStream(FileName), ZipArchiveMode.Read)) {
         var entry = instancesZipFile.GetEntry(descriptor.ResourceName);
-        NumberFormatInfo numberFormat;
-        DateTimeFormatInfo dateFormat;
-        char separator;
-        using (Stream stream = entry.Open()) {
-          TableFileParser.DetermineFileFormat(stream, out numberFormat, out dateFormat, out separator);
-        }
+        var formatOptions = GetFormatOptions(entry);
 
         TableFileParser csvFileParser = new TableFileParser();
         using (Stream stream = entry.Open()) {
-          csvFileParser.Parse(stream, numberFormat, dateFormat, separator, true);
+          csvFileParser.Parse(stream, formatOptions, true);
         }
 
         Dataset dataset = new Dataset(csvFileParser.VariableNames, csvFileParser.Values);
@@ -62,6 +56,17 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
     protected virtual string GetResourceName(string fileName) {
       return GetType().Assembly.GetManifestResourceNames()
               .Where(x => Regex.Match(x, @".*\.Data\." + fileName).Success).SingleOrDefault();
+    }
+
+    protected virtual Stream OpenResourceStream(string fileName) {
+      var instanceArchiveName = GetResourceName(FileName + @"\.zip");
+      return GetType().Assembly.GetManifestResourceStream(instanceArchiveName);
+    }
+
+    protected virtual TableFileFormatOptions GetFormatOptions(ZipArchiveEntry entry) {
+      using (Stream stream = entry.Open()) {
+        return TableFileParser.DetermineFileFormat(stream);
+      }
     }
   }
 }

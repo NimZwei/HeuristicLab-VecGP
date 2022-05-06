@@ -56,12 +56,10 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
       var instanceArchiveName = GetResourceName(FileName + @"\.zip");
       using (var instancesZipFile = new ZipArchive(GetType().Assembly.GetManifestResourceStream(instanceArchiveName), ZipArchiveMode.Read)) {
         foreach (var entry in instancesZipFile.Entries) {
-          NumberFormatInfo numberFormat;
-          DateTimeFormatInfo dateFormat;
-          char separator;
+          TableFileFormatOptions formatOptions;
           using (var stream = entry.Open()) {
             // the method below disposes the stream 
-            TableFileParser.DetermineFileFormat(stream, out numberFormat, out dateFormat, out separator);
+            formatOptions = TableFileParser.DetermineFileFormat(stream);
           }
 
           using (var stream = entry.Open()) {
@@ -69,7 +67,7 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
               var header = reader.ReadLine(); // read the first line
 
               // by convention each dataset from the PennML collection reserves the last column for the target
-              var variableNames = header.Split(separator);
+              var variableNames = header.Split(formatOptions.ColumnSeparator);
               var allowedInputVariables = variableNames.Take(variableNames.Length - 1);
               var target = variableNames.Last();
 

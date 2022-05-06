@@ -19,7 +19,6 @@
  */
 #endregion
 
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -88,33 +87,30 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
     }
 
     public bool AreColumnNamesInFirstLine(string fileName) {
-      NumberFormatInfo numberFormat;
-      DateTimeFormatInfo dateTimeFormatInfo;
-      char separator;
-      DetermineFileFormat(fileName, out numberFormat, out dateTimeFormatInfo, out separator);
+      var formatOptions = DetermineFileFormat(fileName);
       using (var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
-        return AreColumnNamesInFirstLine(stream, numberFormat, dateTimeFormatInfo, separator);
+        return AreColumnNamesInFirstLine(stream, formatOptions);
       }
     }
 
     public bool AreColumnNamesInFirstLine(Stream stream) {
-      NumberFormatInfo numberFormat = NumberFormatInfo.InvariantInfo;
-      DateTimeFormatInfo dateTimeFormatInfo = DateTimeFormatInfo.InvariantInfo;
-      char separator = ',';
-      return AreColumnNamesInFirstLine(stream, numberFormat, dateTimeFormatInfo, separator);
+      var formatOptions = new TableFileFormatOptions {
+        NumberFormat = NumberFormatInfo.InvariantInfo,
+        DateTimeFormat = DateTimeFormatInfo.InvariantInfo,
+        ColumnSeparator = ','
+      };
+      return AreColumnNamesInFirstLine(stream, formatOptions);
     }
 
-    public bool AreColumnNamesInFirstLine(string fileName, NumberFormatInfo numberFormat,
-                                         DateTimeFormatInfo dateTimeFormatInfo, char separator) {
+    public bool AreColumnNamesInFirstLine(string fileName, TableFileFormatOptions formatOptions) {
       using (var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
-        return AreColumnNamesInFirstLine(stream, numberFormat, dateTimeFormatInfo, separator);
+        return AreColumnNamesInFirstLine(stream, formatOptions);
       }
     }
 
-    public bool AreColumnNamesInFirstLine(Stream stream, NumberFormatInfo numberFormat,
-                                          DateTimeFormatInfo dateTimeFormatInfo, char separator) {
+    public bool AreColumnNamesInFirstLine(Stream stream, TableFileFormatOptions formatOptions) {
       using (StreamReader reader = new StreamReader(stream, Encoding)) {
-        tokenizer = new Tokenizer(reader, numberFormat, dateTimeFormatInfo, separator);
+        tokenizer = new Tokenizer(reader, formatOptions);
         return (tokenizer.PeekType() != TokenTypeEnum.Double);
       }
     }
@@ -125,12 +121,9 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
     /// <param name="fileName">file which is parsed</param>
     /// <param name="columnNamesInFirstLine"></param>
     public void Parse(string fileName, bool columnNamesInFirstLine, int lineLimit = -1) {
-      NumberFormatInfo numberFormat;
-      DateTimeFormatInfo dateTimeFormatInfo;
-      char separator;
-      DetermineFileFormat(fileName, out numberFormat, out dateTimeFormatInfo, out separator);
+      var formatOptions = DetermineFileFormat(fileName);
       EstimateNumberOfLines(fileName);
-      Parse(new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), numberFormat, dateTimeFormatInfo, separator, columnNamesInFirstLine, lineLimit);
+      Parse(new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), formatOptions, columnNamesInFirstLine, lineLimit);
     }
 
     /// <summary>
@@ -141,10 +134,10 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
     /// <param name="dateTimeFormatInfo">Format of datetime</param>
     /// <param name="separator">defines the separator</param>
     /// <param name="columnNamesInFirstLine"></param>
-    public void Parse(string fileName, NumberFormatInfo numberFormat, DateTimeFormatInfo dateTimeFormatInfo, char separator, bool columnNamesInFirstLine, int lineLimit = -1) {
+    public void Parse(string fileName, TableFileFormatOptions formatOptions, bool columnNamesInFirstLine, int lineLimit = -1) {
       EstimateNumberOfLines(fileName);
       using (var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
-        Parse(stream, numberFormat, dateTimeFormatInfo, separator, columnNamesInFirstLine, lineLimit);
+        Parse(stream, formatOptions, columnNamesInFirstLine, lineLimit);
       }
     }
 
@@ -181,10 +174,12 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
     /// <param name="stream">stream which is parsed</param>
     /// <param name="columnNamesInFirstLine"></param>
     public void Parse(Stream stream, bool columnNamesInFirstLine, int lineLimit = -1) {
-      NumberFormatInfo numberFormat = NumberFormatInfo.InvariantInfo;
-      DateTimeFormatInfo dateTimeFormatInfo = DateTimeFormatInfo.InvariantInfo;
-      char separator = ',';
-      Parse(stream, numberFormat, dateTimeFormatInfo, separator, columnNamesInFirstLine, lineLimit);
+      var formatOptions = new TableFileFormatOptions {
+        NumberFormat = NumberFormatInfo.InvariantInfo,
+        DateTimeFormat = DateTimeFormatInfo.InvariantInfo,
+        ColumnSeparator = ','
+      };
+      Parse(stream, formatOptions, columnNamesInFirstLine, lineLimit);
     }
 
     /// <summary>
@@ -195,11 +190,11 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
     /// <param name="dateTimeFormatInfo">Format of datetime</param>
     /// <param name="separator">defines the separator</param>
     /// <param name="columnNamesInFirstLine"></param>
-    public void Parse(Stream stream, NumberFormatInfo numberFormat, DateTimeFormatInfo dateTimeFormatInfo, char separator, bool columnNamesInFirstLine, int lineLimit = -1) {
+    public void Parse(Stream stream, TableFileFormatOptions formatOptions, bool columnNamesInFirstLine, int lineLimit = -1) {
       if (lineLimit > 0) estimatedNumberOfLines = lineLimit;
 
       using (var reader = new StreamReader(stream)) {
-        tokenizer = new Tokenizer(reader, numberFormat, dateTimeFormatInfo, separator);
+        tokenizer = new Tokenizer(reader, formatOptions);
         var strValues = new List<List<string>>();
         values = new List<IList>();
         Prepare(columnNamesInFirstLine, strValues);
@@ -256,6 +251,33 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
       this.rows = values.First().Count;
       this.columns = values.Count;
 
+      // see if any string column can be converted to vectors
+      if (formatOptions.VectorSeparator != null) {
+        for (int i = 0; i < values.Count; i++) {
+          if (!(values[i] is List<string> stringList)) continue;
+
+          var strings = new string[stringList.Count][];
+          var doubles = new double[strings.Length][];
+          bool allDoubles = true;
+          for (int j = 0; j < strings.Length && allDoubles; j++) {
+            strings[j] = stringList[j].Split(formatOptions.VectorSeparator.Value);
+            doubles[j] = new double[strings[j].Length];
+            for (int k = 0; k < doubles[j].Length && allDoubles; k++) {
+              allDoubles = double.TryParse(strings[j][k], NumberStyles.Float, formatOptions.NumberFormat, out doubles[j][k]);
+            }
+          }
+
+          if (allDoubles) {
+            var vectorList = new List<double[]>(stringList.Count);
+            for (int j = 0; j < doubles.Length; j++) {
+              vectorList.Add(doubles[j]);
+            }
+
+            values[i] = vectorList;
+          }
+        }
+      }
+
       // replace lists with undefined type (object) with double-lists
       for (int i = 0; i < values.Count; i++) {
         if (values[i] is List<object>) {
@@ -270,11 +292,13 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
         var dateList = l as List<DateTime>;
         var stringList = l as List<string>;
         var objList = l as List<object>;
+        var dblVecList = l as List<double[]>;
         if (dblList != null) dblList.TrimExcess();
         if (byteList != null) byteList.TrimExcess();
         if (dateList != null) dateList.TrimExcess();
         if (stringList != null) stringList.TrimExcess();
         if (objList != null) objList.TrimExcess();
+        if (dblVecList != null) dblVecList.TrimExcess();
       }
 
       // for large files we created a lot of memory pressure, cannot hurt to run GC.Collect here (TableFileParser is called seldomly on user interaction)
@@ -421,11 +445,11 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
     }
     #endregion
 
-    public static void DetermineFileFormat(string path, out NumberFormatInfo numberFormat, out DateTimeFormatInfo dateTimeFormatInfo, out char separator) {
-      DetermineFileFormat(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), out numberFormat, out dateTimeFormatInfo, out separator);
+    public static TableFileFormatOptions DetermineFileFormat(string path) {
+      return DetermineFileFormat(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
     }
 
-    public static void DetermineFileFormat(Stream stream, out NumberFormatInfo numberFormat, out DateTimeFormatInfo dateTimeFormatInfo, out char separator) {
+    public static TableFileFormatOptions DetermineFileFormat(Stream stream) {
       using (StreamReader reader = new StreamReader(stream)) {
         // skip first line
         reader.ReadLine();
@@ -448,13 +472,15 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
         // no points no commas => English format (only integer numbers) use the other frequently occuring char as separator
         // in all cases only treat ' ' as separator if no other separator is possible (spaces can also occur additionally to separators)
         if (OccurrencesOf(charCounts, '.') > 10) {
-          numberFormat = NumberFormatInfo.InvariantInfo;
-          dateTimeFormatInfo = DateTimeFormatInfo.InvariantInfo;
-          separator = POSSIBLE_SEPARATORS
-            .Where(c => OccurrencesOf(charCounts, c) > 10)
-            .OrderBy(c => -OccurrencesOf(charCounts, c))
-            .DefaultIfEmpty(' ')
-            .First();
+          return new TableFileFormatOptions {
+            NumberFormat = NumberFormatInfo.InvariantInfo,
+            DateTimeFormat = DateTimeFormatInfo.InvariantInfo,
+            ColumnSeparator = POSSIBLE_SEPARATORS
+              .Where(c => OccurrencesOf(charCounts, c) > 10)
+              .OrderBy(c => -OccurrencesOf(charCounts, c))
+                .DefaultIfEmpty(' ')
+              .First()
+          };
         } else if (OccurrencesOf(charCounts, ',') > 10) {
           // no points and many commas
           // count the number of tokens (chains of only digits and commas) that contain multiple comma characters
@@ -469,30 +495,36 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
           }
           if (tokensWithMultipleCommas > 1) {
             // English format (only integer values) with ',' as separator
-            numberFormat = NumberFormatInfo.InvariantInfo;
-            dateTimeFormatInfo = DateTimeFormatInfo.InvariantInfo;
-            separator = ',';
+            return new TableFileFormatOptions {
+              NumberFormat = NumberFormatInfo.InvariantInfo,
+              DateTimeFormat = DateTimeFormatInfo.InvariantInfo,
+              ColumnSeparator = ','
+            };
           } else {
             char[] disallowedSeparators = new char[] { ',' }; // n. def. contains a space so ' ' should be disallowed to, however existing unit tests would fail
             // German format (real values)
-            numberFormat = NumberFormatInfo.GetInstance(new CultureInfo("de-DE"));
-            dateTimeFormatInfo = DateTimeFormatInfo.GetInstance(new CultureInfo("de-DE"));
-            separator = POSSIBLE_SEPARATORS
-              .Except(disallowedSeparators)
-              .Where(c => OccurrencesOf(charCounts, c) > 10)
-              .OrderBy(c => -OccurrencesOf(charCounts, c))
-              .DefaultIfEmpty(' ')
-              .First();
+            return new TableFileFormatOptions {
+              NumberFormat = NumberFormatInfo.GetInstance(new CultureInfo("de-DE")),
+              DateTimeFormat = DateTimeFormatInfo.GetInstance(new CultureInfo("de-DE")),
+              ColumnSeparator = POSSIBLE_SEPARATORS
+                .Except(disallowedSeparators)
+                .Where(c => OccurrencesOf(charCounts, c) > 10)
+                .OrderBy(c => -OccurrencesOf(charCounts, c))
+                .DefaultIfEmpty(' ')
+                .First()
+            };
           }
         } else {
           // no points and no commas => English format
-          numberFormat = NumberFormatInfo.InvariantInfo;
-          dateTimeFormatInfo = DateTimeFormatInfo.InvariantInfo;
-          separator = POSSIBLE_SEPARATORS
-            .Where(c => OccurrencesOf(charCounts, c) > 10)
-            .OrderBy(c => -OccurrencesOf(charCounts, c))
-            .DefaultIfEmpty(' ')
-            .First();
+          return new TableFileFormatOptions {
+            NumberFormat = NumberFormatInfo.InvariantInfo,
+            DateTimeFormat = DateTimeFormatInfo.InvariantInfo,
+            ColumnSeparator = POSSIBLE_SEPARATORS
+              .Where(c => OccurrencesOf(charCounts, c) > 10)
+              .OrderBy(c => -OccurrencesOf(charCounts, c))
+              .DefaultIfEmpty(' ')
+              .First()
+          };
         }
       }
     }
@@ -539,11 +571,11 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
         private set;
       }
 
-      public Tokenizer(StreamReader reader, NumberFormatInfo numberFormatInfo, DateTimeFormatInfo dateTimeFormatInfo, char separator) {
+      public Tokenizer(StreamReader reader, TableFileFormatOptions formatOptions) {
         this.reader = reader;
-        this.numberFormatInfo = numberFormatInfo;
-        this.dateTimeFormatInfo = dateTimeFormatInfo;
-        this.separator = separator;
+        this.numberFormatInfo = formatOptions.NumberFormat;
+        this.dateTimeFormatInfo = formatOptions.DateTimeFormat;
+        this.separator = formatOptions.ColumnSeparator;
         this.separators = new char[] { separator };
         ReadNextTokens();
       }

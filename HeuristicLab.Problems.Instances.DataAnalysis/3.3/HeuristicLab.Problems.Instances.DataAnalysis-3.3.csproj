@@ -23,7 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,7 +33,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -55,7 +55,7 @@
     <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>..\..\bin\</OutputPath>
@@ -73,7 +73,7 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -89,7 +89,7 @@
     <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>..\..\bin\</OutputPath>
@@ -107,7 +107,7 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ALGLIB-3.17.0, Version=3.17.0.0, Culture=neutral, PublicKeyToken=ba48961d6f65dcec, processorArchitecture=MSIL">
@@ -281,6 +281,8 @@
     <Compile Include="Regression\Feynman\FeynmanDescriptor.cs" />
     <Compile Include="Regression\Feynman\FeynmanLargeInstanceProvider.cs" />
     <Compile Include="Regression\Feynman\FeynmanSmallInstanceProvider.cs" />
+    <Compile Include="Regression\GPTP2021VectorBenchmarks\GPTP2021VectorBenchmarkDataDescriptor.cs" />
+    <Compile Include="Regression\GPTP2021VectorBenchmarks\GPTP2021VectorBenchmarksInstanceProvider.cs" />
     <Compile Include="Regression\MibaFriction\CF3.cs" />
     <Compile Include="Regression\MibaFriction\Wear1.cs" />
     <Compile Include="Regression\MibaFriction\Wear2.cs" />
@@ -377,6 +379,7 @@
     <Compile Include="Regression\Vladislavleva\SineCosineFunction.cs" />
     <Compile Include="Regression\Vladislavleva\UnwrappedBallFunctionFiveDimensional.cs" />
     <Compile Include="Regression\Vladislavleva\VladislavlevaInstanceProvider.cs" />
+    <Compile Include="TableFileFormatOptions.cs" />
     <Compile Include="TableFileParser.cs" />
     <Compile Include="TimeSeries\CSV\TimeSeriesPrognosisCSVInstanceProvider.cs" />
     <Compile Include="TimeSeries\TimeSeriesPrognosisImportType.cs" />
@@ -390,6 +393,7 @@
     <EmbeddedResource Include="Regression\Data\RegressionRealWorld.zip" />
     <EmbeddedResource Include="Regression\Data\MibaFriction.zip" />
     <EmbeddedResource Include="Regression\Data\PennML.zip" />
+    <EmbeddedResource Include="Regression\Data\GPTP2021VectorBenchmarks.zip" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\HeuristicLab.Collections\3.3\HeuristicLab.Collections-3.3.csproj">

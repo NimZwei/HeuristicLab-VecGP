@@ -44,7 +44,13 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
       csvFileParser.ProgressChanged += (sender, e) => {
         OnProgressChanged(e / (double)fileSize);
       };
-      csvFileParser.Parse(path, csvFormat.NumberFormatInfo, csvFormat.DateTimeFormatInfo, csvFormat.Separator, csvFormat.VariableNamesAvailable);
+      var formatOptions = new TableFileFormatOptions {
+        NumberFormat = csvFormat.NumberFormatInfo,
+        DateTimeFormat = csvFormat.DateTimeFormatInfo,
+        ColumnSeparator = csvFormat.Separator,
+        VectorSeparator = csvFormat.VectorSeparator
+      };
+      csvFileParser.Parse(path, formatOptions, csvFormat.VariableNamesAvailable);
       return ImportData(path, type, csvFileParser);
     }
 

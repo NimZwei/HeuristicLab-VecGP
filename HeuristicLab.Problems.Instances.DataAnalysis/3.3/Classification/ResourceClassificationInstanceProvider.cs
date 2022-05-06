@@ -39,16 +39,12 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
       var instanceArchiveName = GetResourceName(FileName + @"\.zip");
       using (var instancesZipFile = new ZipArchive(GetType().Assembly.GetManifestResourceStream(instanceArchiveName), ZipArchiveMode.Read)) {
         var entry = instancesZipFile.GetEntry(descriptor.ResourceName);
-        NumberFormatInfo numberFormat;
-        DateTimeFormatInfo dateFormat;
-        char separator;
-        using (Stream stream = entry.Open()) {
-          TableFileParser.DetermineFileFormat(stream, out numberFormat, out dateFormat, out separator);
-        }
+
+        var formatOptions = GetFormatOptions(entry);
 
         TableFileParser csvFileParser = new TableFileParser();
         using (Stream stream = entry.Open()) {
-          csvFileParser.Parse(stream, numberFormat, dateFormat, separator, true);
+          csvFileParser.Parse(stream, formatOptions, true);
         }
 
         Dataset dataset = new Dataset(csvFileParser.VariableNames, csvFileParser.Values);
@@ -63,6 +59,12 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
     protected virtual string GetResourceName(string fileName) {
       return Assembly.GetExecutingAssembly().GetManifestResourceNames()
               .Where(x => Regex.Match(x, @".*\.Data\." + fileName).Success).SingleOrDefault();
+    }
+
+    protected virtual TableFileFormatOptions GetFormatOptions(ZipArchiveEntry entry) {
+      using (Stream stream = entry.Open()) {
+        return TableFileParser.DetermineFileFormat(stream);
+      }
     }
   }
 }

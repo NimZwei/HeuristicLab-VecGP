@@ -62,6 +62,9 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       this.SeparatorLabel = new System.Windows.Forms.Label();
       this.SeparatorComboBox = new System.Windows.Forms.ComboBox();
       this.CSVSettingsGroupBox = new System.Windows.Forms.GroupBox();
+      this.VectorSeparatorInfoLabel = new System.Windows.Forms.Label();
+      this.VectorSeparatorComboBox = new System.Windows.Forms.ComboBox();
+      this.VectorSeparatorLabel = new System.Windows.Forms.Label();
       this.EncodingInfoLabel = new System.Windows.Forms.Label();
       this.EncodingLabel = new System.Windows.Forms.Label();
       this.EncodingComboBox = new System.Windows.Forms.ComboBox();
@@ -96,7 +99,7 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       this.OkButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
       this.OkButton.DialogResult = System.Windows.Forms.DialogResult.OK;
       this.OkButton.Enabled = false;
-      this.OkButton.Location = new System.Drawing.Point(303, 422);
+      this.OkButton.Location = new System.Drawing.Point(303, 528);
       this.OkButton.Name = "OkButton";
       this.OkButton.Size = new System.Drawing.Size(75, 23);
       this.OkButton.TabIndex = 2;
@@ -140,7 +143,7 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       // 
       this.CancellationButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
       this.CancellationButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-      this.CancellationButton.Location = new System.Drawing.Point(384, 422);
+      this.CancellationButton.Location = new System.Drawing.Point(384, 528);
       this.CancellationButton.Name = "CancellationButton";
       this.CancellationButton.Size = new System.Drawing.Size(75, 23);
       this.CancellationButton.TabIndex = 3;
@@ -251,6 +254,9 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       // 
       this.CSVSettingsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
+      this.CSVSettingsGroupBox.Controls.Add(this.VectorSeparatorInfoLabel);
+      this.CSVSettingsGroupBox.Controls.Add(this.VectorSeparatorComboBox);
+      this.CSVSettingsGroupBox.Controls.Add(this.VectorSeparatorLabel);
       this.CSVSettingsGroupBox.Controls.Add(this.EncodingInfoLabel);
       this.CSVSettingsGroupBox.Controls.Add(this.EncodingLabel);
       this.CSVSettingsGroupBox.Controls.Add(this.EncodingComboBox);
@@ -266,16 +272,50 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       this.CSVSettingsGroupBox.Controls.Add(this.DateTimeFormatLabel);
       this.CSVSettingsGroupBox.Location = new System.Drawing.Point(12, 32);
       this.CSVSettingsGroupBox.Name = "CSVSettingsGroupBox";
-      this.CSVSettingsGroupBox.Size = new System.Drawing.Size(447, 153);
+      this.CSVSettingsGroupBox.Size = new System.Drawing.Size(447, 183);
       this.CSVSettingsGroupBox.TabIndex = 16;
       this.CSVSettingsGroupBox.TabStop = false;
       this.CSVSettingsGroupBox.Text = "CSV Settings";
+      // 
+      // VectorSeparatorInfoLabel
+      // 
+      this.VectorSeparatorInfoLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.VectorSeparatorInfoLabel.Image = HeuristicLab.Common.Resources.VSImageLibrary.Information;
+      this.VectorSeparatorInfoLabel.Location = new System.Drawing.Point(417, 100);
+      this.VectorSeparatorInfoLabel.Name = "VectorSeparatorInfoLabel";
+      this.VectorSeparatorInfoLabel.Size = new System.Drawing.Size(24, 25);
+      this.VectorSeparatorInfoLabel.TabIndex = 30;
+      this.VectorSeparatorInfoLabel.Tag = "Select the decimal separator used to for double values";
+      this.ToolTip.SetToolTip(this.VectorSeparatorInfoLabel, "If a value contains a Vector Separator it is converted to a Vector column with th" +
+        "e value split on the Vector Separator symbol.");
+      // 
+      // VectorSeparatorComboBox
+      // 
+      this.VectorSeparatorComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.VectorSeparatorComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+      this.VectorSeparatorComboBox.Enabled = false;
+      this.VectorSeparatorComboBox.FormattingEnabled = true;
+      this.VectorSeparatorComboBox.Location = new System.Drawing.Point(111, 100);
+      this.VectorSeparatorComboBox.Name = "VectorSeparatorComboBox";
+      this.VectorSeparatorComboBox.Size = new System.Drawing.Size(300, 21);
+      this.VectorSeparatorComboBox.TabIndex = 29;
+      this.VectorSeparatorComboBox.SelectionChangeCommitted += new System.EventHandler(this.CSVFormatComboBoxSelectionChangeCommitted);
+      // 
+      // VectorSeparatorLabel
+      // 
+      this.VectorSeparatorLabel.AutoSize = true;
+      this.VectorSeparatorLabel.Location = new System.Drawing.Point(6, 104);
+      this.VectorSeparatorLabel.Name = "VectorSeparatorLabel";
+      this.VectorSeparatorLabel.Size = new System.Drawing.Size(90, 13);
+      this.VectorSeparatorLabel.TabIndex = 28;
+      this.VectorSeparatorLabel.Text = "Vector Separator:";
       // 
       // EncodingInfoLabel
       // 
       this.EncodingInfoLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.EncodingInfoLabel.Image = HeuristicLab.Common.Resources.VSImageLibrary.Information;
-      this.EncodingInfoLabel.Location = new System.Drawing.Point(421, 102);
+      this.EncodingInfoLabel.Location = new System.Drawing.Point(421, 130);
       this.EncodingInfoLabel.Name = "EncodingInfoLabel";
       this.EncodingInfoLabel.Size = new System.Drawing.Size(16, 16);
       this.EncodingInfoLabel.TabIndex = 27;
@@ -286,7 +326,7 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       // EncodingLabel
       // 
       this.EncodingLabel.AutoSize = true;
-      this.EncodingLabel.Location = new System.Drawing.Point(6, 103);
+      this.EncodingLabel.Location = new System.Drawing.Point(6, 130);
       this.EncodingLabel.Name = "EncodingLabel";
       this.EncodingLabel.Size = new System.Drawing.Size(52, 13);
       this.EncodingLabel.TabIndex = 26;
@@ -299,7 +339,7 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       this.EncodingComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
       this.EncodingComboBox.Enabled = false;
       this.EncodingComboBox.FormattingEnabled = true;
-      this.EncodingComboBox.Location = new System.Drawing.Point(111, 100);
+      this.EncodingComboBox.Location = new System.Drawing.Point(111, 127);
       this.EncodingComboBox.Name = "EncodingComboBox";
       this.EncodingComboBox.Size = new System.Drawing.Size(300, 21);
       this.EncodingComboBox.TabIndex = 25;
@@ -308,7 +348,7 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       // CheckboxColumnNames
       // 
       this.CheckboxColumnNames.AutoSize = true;
-      this.CheckboxColumnNames.Location = new System.Drawing.Point(9, 127);
+      this.CheckboxColumnNames.Location = new System.Drawing.Point(9, 154);
       this.CheckboxColumnNames.Name = "CheckboxColumnNames";
       this.CheckboxColumnNames.Size = new System.Drawing.Size(144, 17);
       this.CheckboxColumnNames.TabIndex = 24;
@@ -365,9 +405,9 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       this.ProblemDataSettingsGroupBox.Controls.Add(this.TrainingLabel);
       this.ProblemDataSettingsGroupBox.Controls.Add(this.TrainingTestTrackBar);
       this.ProblemDataSettingsGroupBox.Controls.Add(this.ShuffleDataCheckbox);
-      this.ProblemDataSettingsGroupBox.Location = new System.Drawing.Point(12, 191);
+      this.ProblemDataSettingsGroupBox.Location = new System.Drawing.Point(12, 221);
       this.ProblemDataSettingsGroupBox.Name = "ProblemDataSettingsGroupBox";
-      this.ProblemDataSettingsGroupBox.Size = new System.Drawing.Size(447, 225);
+      this.ProblemDataSettingsGroupBox.Size = new System.Drawing.Size(447, 301);
       this.ProblemDataSettingsGroupBox.TabIndex = 17;
       this.ProblemDataSettingsGroupBox.TabStop = false;
       this.ProblemDataSettingsGroupBox.Text = "ProblemData Settings";
@@ -415,7 +455,7 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       this.PreviewDatasetMatrix.ReadOnly = true;
       this.PreviewDatasetMatrix.ShowRowsAndColumnsTextBox = false;
       this.PreviewDatasetMatrix.ShowStatisticalInformation = false;
-      this.PreviewDatasetMatrix.Size = new System.Drawing.Size(435, 111);
+      this.PreviewDatasetMatrix.Size = new System.Drawing.Size(435, 187);
       this.PreviewDatasetMatrix.TabIndex = 0;
       // 
       // DataAnalysisImportDialog
@@ -423,7 +463,7 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       this.AcceptButton = this.OkButton;
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(471, 457);
+      this.ClientSize = new System.Drawing.Size(471, 563);
       this.Controls.Add(this.ProblemDataSettingsGroupBox);
       this.Controls.Add(this.CSVSettingsGroupBox);
       this.Controls.Add(this.ProblemTextBox);
@@ -479,5 +519,8 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
     protected System.Windows.Forms.Label EncodingInfoLabel;
     protected System.Windows.Forms.Label EncodingLabel;
     protected System.Windows.Forms.ComboBox EncodingComboBox;
+    protected System.Windows.Forms.Label VectorSeparatorInfoLabel;
+    protected System.Windows.Forms.ComboBox VectorSeparatorComboBox;
+    protected System.Windows.Forms.Label VectorSeparatorLabel;
   }
 }

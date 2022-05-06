@@ -54,6 +54,15 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
         new KeyValuePair<NumberFormatInfo, string>(NumberFormatInfo.InvariantInfo, ". (Period)" )
     };
 
+    private static readonly List<KeyValuePair<char?, string>> POSSIBLE_VECTOR_SEPARATORS =
+      new List<KeyValuePair<char?, string>>{
+        new KeyValuePair<char?, string>(null, "None"),
+        new KeyValuePair<char?, string>(',', ", (Comma)"),
+        new KeyValuePair<char?, string>(';', "; (Semicolon)"),
+        new KeyValuePair<char?, string>(' ', "' ' (Space)"),
+        new KeyValuePair<char?, string>('|', "| (Pipe)")
+      };
+
     private static readonly List<KeyValuePair<Encoding, string>> POSSIBLE_ENCODINGS =
       new List<KeyValuePair<Encoding, string>> {
         new KeyValuePair<Encoding, string>(Encoding.Default, "Default"),
@@ -81,8 +90,9 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
           Separator = (char)SeparatorComboBox.SelectedValue,
           NumberFormatInfo = (NumberFormatInfo)DecimalSeparatorComboBox.SelectedValue,
           DateTimeFormatInfo = (DateTimeFormatInfo)DateTimeFormatComboBox.SelectedValue,
+          VectorSeparator = (char?)VectorSeparatorComboBox.SelectedValue,
           VariableNamesAvailable = CheckboxColumnNames.Checked,
-          Encoding = (Encoding) EncodingComboBox.SelectedValue
+          Encoding = (Encoding)EncodingComboBox.SelectedValue
         };
       }
     }
@@ -96,6 +106,9 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       DecimalSeparatorComboBox.DataSource = POSSIBLE_DECIMAL_SEPARATORS;
       DecimalSeparatorComboBox.ValueMember = "Key";
       DecimalSeparatorComboBox.DisplayMember = "Value";
+      VectorSeparatorComboBox.DataSource = POSSIBLE_VECTOR_SEPARATORS;
+      VectorSeparatorComboBox.ValueMember = "Key";
+      VectorSeparatorComboBox.DisplayMember = "Value";
       DateTimeFormatComboBox.DataSource = POSSIBLE_DATETIME_FORMATS;
       DateTimeFormatComboBox.ValueMember = "Key";
       DateTimeFormatComboBox.DisplayMember = "Value";
@@ -109,7 +122,7 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       if (separator.Any())
         SeparatorComboBox.SelectedItem = separator.First();
 
-      var decimalSeparator = POSSIBLE_DECIMAL_SEPARATORS.Where(n => n.Value.Substring(0,1) == CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator);
+      var decimalSeparator = POSSIBLE_DECIMAL_SEPARATORS.Where(n => n.Value.Substring(0, 1) == CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalSeparator);
       if (decimalSeparator.Any())
         DecimalSeparatorComboBox.SelectedItem = decimalSeparator.First();
     }
@@ -124,14 +137,18 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
 
       SeparatorComboBox.Enabled = true;
       DecimalSeparatorComboBox.Enabled = true;
+      VectorSeparatorComboBox.Enabled = true;
       DateTimeFormatComboBox.Enabled = true;
       EncodingComboBox.Enabled = true;
       ProblemTextBox.Text = openFileDialog.FileName;
       TableFileParser csvParser = new TableFileParser();
-      CheckboxColumnNames.Checked = csvParser.AreColumnNamesInFirstLine(ProblemTextBox.Text,
-                                                                      (NumberFormatInfo)DecimalSeparatorComboBox.SelectedValue,
-                                                                      (DateTimeFormatInfo)DateTimeFormatComboBox.SelectedValue,
-                                                                      (char)SeparatorComboBox.SelectedValue);
+      var formatOptions = new TableFileFormatOptions {
+        NumberFormat = (NumberFormatInfo)DecimalSeparatorComboBox.SelectedValue,
+        DateTimeFormat = (DateTimeFormatInfo)DateTimeFormatComboBox.SelectedValue,
+        ColumnSeparator = (char)SeparatorComboBox.SelectedValue,
+        VectorSeparator = (char?)VectorSeparatorComboBox.SelectedValue
+      };
+      CheckboxColumnNames.Checked = csvParser.AreColumnNamesInFirstLine(ProblemTextBox.Text, formatOptions);
       ParseCSVFile();
     }
 
@@ -152,11 +169,13 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       try {
         TableFileParser csvParser = new TableFileParser();
         csvParser.Encoding = (Encoding)EncodingComboBox.SelectedValue;
-        csvParser.Parse(ProblemTextBox.Text,
-                        (NumberFormatInfo)DecimalSeparatorComboBox.SelectedValue,
-                        (DateTimeFormatInfo)DateTimeFormatComboBox.SelectedValue,
-                        (char)SeparatorComboBox.SelectedValue,
-                        CheckboxColumnNames.Checked, lineLimit: 500);
+        var formatOptions = new TableFileFormatOptions {
+          NumberFormat = (NumberFormatInfo)DecimalSeparatorComboBox.SelectedValue,
+          DateTimeFormat = (DateTimeFormatInfo)DateTimeFormatComboBox.SelectedValue,
+          ColumnSeparator = (char)SeparatorComboBox.SelectedValue,
+          VectorSeparator = (char?)VectorSeparatorComboBox.SelectedValue
+        };
+        csvParser.Parse(ProblemTextBox.Text, formatOptions, CheckboxColumnNames.Checked, lineLimit: 500);
         IEnumerable<string> variableNamesWithType = GetVariableNamesWithType(csvParser);
         PreviewDatasetMatrix.Content = new Dataset(variableNamesWithType, csvParser.Values);
 
@@ -165,8 +184,7 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
         ErrorTextBox.Text = String.Empty;
         ErrorTextBox.Visible = false;
         OkButton.Enabled = true;
-      }
-       catch (Exception ex) {
+      } catch (Exception ex) {
         if (ex is IOException || ex is InvalidOperationException || ex is ArgumentException) {
           OkButton.Enabled = false;
           ErrorTextBox.Text = ex.Message;
@@ -192,8 +210,10 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
           variableNamesWithType[i] += " (String)";
         } else if (csvParser.Values[i] is List<DateTime>) {
           variableNamesWithType[i] += " (DateTime)";
+        } else if (csvParser.Values[i] is List<double[]>) {
+          variableNamesWithType[i] += " (Double-Vector)";
         } else {
-          throw new ArgumentException("The variable values must be of type List<double>, List<string> or List<DateTime>");
+          throw new ArgumentException("The variable values must be of type List<double>, List<string>, List<DateTime> or List<double[]>");
         }
       }
       return variableNamesWithType;

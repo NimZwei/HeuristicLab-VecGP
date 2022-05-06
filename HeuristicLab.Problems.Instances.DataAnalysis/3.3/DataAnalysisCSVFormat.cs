@@ -27,6 +27,7 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis {
     public char Separator { get; set; }
     public NumberFormatInfo NumberFormatInfo { get; set; }
     public DateTimeFormatInfo DateTimeFormatInfo { get; set; }
+    public char? VectorSeparator { get; set; }
     public bool VariableNamesAvailable { get; set; }
     public Encoding Encoding { get; set; }
   }
