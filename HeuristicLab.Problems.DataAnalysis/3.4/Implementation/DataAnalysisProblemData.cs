@@ -165,10 +165,10 @@ namespace HeuristicLab.Problems.DataAnalysis {
       if (dataset == null) throw new ArgumentNullException("The dataset must not be null.");
       if (allowedInputVariables == null) throw new ArgumentNullException("The allowed input variables must not be null.");
 
-      if (allowedInputVariables.Except(dataset.DoubleVariables).Except(dataset.StringVariables).Any())
+      if (allowedInputVariables.Except(dataset.DoubleVariables).Except(dataset.StringVariables).Except(dataset.DoubleVectorVariables).Any())
         throw new ArgumentException("All allowed input variables must be present in the dataset and of type double or string.");
 
-      var variables = dataset.VariableNames.Where(variable => dataset.VariableHasType<double>(variable) || dataset.VariableHasType<string>(variable));
+      var variables = dataset.VariableNames.Where(variable => dataset.VariableHasType<double>(variable) || dataset.VariableHasType<string>(variable) || dataset.VariableHasType<double[]>(variable));
       var inputVariables = new CheckedItemList<StringValue>(variables.Select(x => new StringValue(x).AsReadOnly()));
       foreach (StringValue x in inputVariables)
         inputVariables.SetItemCheckedState(x, allowedInputVariables.Contains(x.Value));

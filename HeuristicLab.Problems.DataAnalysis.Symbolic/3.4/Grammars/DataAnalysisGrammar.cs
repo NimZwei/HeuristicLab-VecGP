@@ -34,7 +34,7 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
     protected DataAnalysisGrammar(DataAnalysisGrammar original, Cloner cloner) : base(original, cloner) { }
     protected DataAnalysisGrammar(string name, string description) : base(name, description) { }
 
-    public void ConfigureVariableSymbols(IDataAnalysisProblemData problemData) {
+    public virtual void ConfigureVariableSymbols(IDataAnalysisProblemData problemData) {
       var dataset = problemData.Dataset;
       foreach (var varSymbol in Symbols.OfType<VariableBase>()) {
         if (!varSymbol.Fixed) {
