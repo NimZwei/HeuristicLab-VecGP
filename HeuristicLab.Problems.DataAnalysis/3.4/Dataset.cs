@@ -23,6 +23,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using HEAL.Attic;
 using HeuristicLab.Common;
@@ -220,6 +221,10 @@ namespace HeuristicLab.Problems.DataAnalysis {
       get { return variableValues.Where(p => p.Value is IList<DateTime>).Select(p => p.Key); }
     }
 
+    public IEnumerable<string> DoubleVectorVariables {
+      get { return variableValues.Where(p => p.Value is IList<double[]>).Select(p => p.Key); }
+    }
+
     public IEnumerable<double> GetDoubleValues(string variableName) {
       return GetValues<double>(variableName);
     }
@@ -229,11 +234,10 @@ namespace HeuristicLab.Problems.DataAnalysis {
     public IEnumerable<DateTime> GetDateTimeValues(string variableName) {
       return GetValues<DateTime>(variableName);
     }
-
-    public ReadOnlyCollection<double> GetReadOnlyDoubleValues(string variableName) {
-      var values = GetValues<double>(variableName);
-      return new ReadOnlyCollection<double>(values);
+    public IEnumerable<double[]> GetDoubleVectorValues(string variableName) {
+      return GetValues<double[]>(variableName);
     }
+
     public double GetDoubleValue(string variableName, int row) {
       var values = GetValues<double>(variableName);
       return values[row];
@@ -241,12 +245,15 @@ namespace HeuristicLab.Problems.DataAnalysis {
     public IEnumerable<double> GetDoubleValues(string variableName, IEnumerable<int> rows) {
       return GetValues<double>(variableName, rows);
     }
+    public ReadOnlyCollection<double> GetReadOnlyDoubleValues(string variableName) {
+      var values = GetValues<double>(variableName);
+      return new ReadOnlyCollection<double>(values);
+    }
 
     public string GetStringValue(string variableName, int row) {
       var values = GetValues<string>(variableName);
       return values[row];
     }
-
     public IEnumerable<string> GetStringValues(string variableName, IEnumerable<int> rows) {
       return GetValues<string>(variableName, rows);
     }
@@ -266,6 +273,20 @@ namespace HeuristicLab.Problems.DataAnalysis {
       var values = GetValues<DateTime>(variableName);
       return new ReadOnlyCollection<DateTime>(values);
     }
+
+    public double[] GetDoubleVectorValue(string variableName, int row) {
+      var values = GetValues<double[]>(variableName);
+      return values[row];
+    }
+    public IEnumerable<double[]> GetDoubleVectorValues(string variableName, IEnumerable<int> rows) {
+      return GetValues<double[]>(variableName, rows);
+    }
+    public ReadOnlyCollection<double[]> GetReadOnlyDoubleVectorValues(string variableName) {
+      var values = GetValues<double[]>(variableName);
+      return new ReadOnlyCollection<double[]>(values);
+    }
+
+
     private IEnumerable<T> GetValues<T>(string variableName, IEnumerable<int> rows) {
       var values = GetValues<T>(variableName);
       return rows.Select(x => values[x]);
@@ -297,7 +318,7 @@ namespace HeuristicLab.Problems.DataAnalysis {
       return IsAllowedType(type);
     }
     protected static bool IsAllowedType(Type type) {
-      return type == typeof(double) || type == typeof(string) || type == typeof(DateTime);
+      return type == typeof(double) || type == typeof(string) || type == typeof(DateTime) || type == typeof(double[]);
     }
 
     protected static void CheckArguments(IEnumerable<string> variableNames, IEnumerable<IList> variableValues) {
@@ -342,6 +363,9 @@ namespace HeuristicLab.Problems.DataAnalysis {
       var dateTimeValues = values as IList<DateTime>;
       if (dateTimeValues != null) return new List<DateTime>(dateTimeValues);
 
+      var doubleVectorValues = values as IList<double[]>;
+      if (doubleVectorValues != null) return new List<double[]>(doubleVectorValues);
+
       throw new ArgumentException(string.Format("Unsupported variable type {0}.", GetElementType(values)));
     }
 
@@ -380,7 +404,10 @@ namespace HeuristicLab.Problems.DataAnalysis {
       set { throw new NotSupportedException(); }
     }
     string IStringConvertibleMatrix.GetValue(int rowIndex, int columnIndex) {
-      return variableValues[variableNames[columnIndex]][rowIndex].ToString();
+      object value = variableValues[variableNames[columnIndex]][rowIndex];
+      if (value is double[] doubleVector) {
+        return string.Join(CultureInfo.InvariantCulture.TextInfo.ListSeparator, doubleVector.Select(s => s.ToString("G", CultureInfo.InvariantCulture)));
+      } else return value.ToString();
     }
     bool IStringConvertibleMatrix.SetValue(string value, int rowIndex, int columnIndex) {
       throw new NotSupportedException();

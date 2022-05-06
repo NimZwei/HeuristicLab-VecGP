@@ -33,6 +33,7 @@ namespace HeuristicLab.Problems.DataAnalysis {
     IEnumerable<string> DoubleVariables { get; }
     IEnumerable<string> StringVariables { get; }
     IEnumerable<string> DateTimeVariables { get; }
+    IEnumerable<string> DoubleVectorVariables { get; }
 
     bool ContainsVariable(string variablename);
     bool VariableHasType<T>(string variableName);
@@ -47,9 +48,14 @@ namespace HeuristicLab.Problems.DataAnalysis {
     IEnumerable<string> GetStringValues(string variableName, IEnumerable<int> rows);
     ReadOnlyCollection<string> GetReadOnlyStringValues(string VariableName);
 
-    System.DateTime GetDateTimeValue(string variableName, int row);
+    DateTime GetDateTimeValue(string variableName, int row);
     IEnumerable<DateTime> GetDateTimeValues(string variableName);
     IEnumerable<DateTime> GetDateTimeValues(string variableName, IEnumerable<int> rows);
     ReadOnlyCollection<DateTime> GetReadOnlyDateTimeValues(string variableName);
+
+    double[] GetDoubleVectorValue(string variableName, int row);
+    IEnumerable<double[]> GetDoubleVectorValues(string variableName);
+    IEnumerable<double[]> GetDoubleVectorValues(string variableName, IEnumerable<int> rows);
+    ReadOnlyCollection<double[]> GetReadOnlyDoubleVectorValues(string variableName);
   }
 }
