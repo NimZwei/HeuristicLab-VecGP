@@ -199,5 +199,13 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
       if (symbolToOpcode.TryGetValue(treeNode.Symbol.GetType(), out byte opCode)) return opCode;
       else throw new NotSupportedException("Symbol: " + treeNode.Symbol);
     }
+
+    public static bool HasSymbol(ISymbolicExpressionTreeNode treeNode) {
+      return symbolToOpcode.ContainsKey(treeNode.Symbol.GetType());
+    }
+
+    public static bool TryMapSymbolToOpCode(ISymbolicExpressionTreeNode treeNode, out byte opCode) {
+      return symbolToOpcode.TryGetValue(treeNode.Symbol.GetType(), out opCode);
+    }
   }
 }
