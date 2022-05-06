@@ -46,7 +46,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -57,7 +57,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DebugSymbols>true</DebugSymbols>
@@ -68,7 +68,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>$(SolutionDir)\bin\</OutputPath>
@@ -79,7 +79,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -90,7 +90,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>$(SolutionDir)\bin\</OutputPath>
@@ -101,7 +101,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ALGLIB-3.17.0, Version=3.17.0.0, Culture=neutral, PublicKeyToken=ba48961d6f65dcec, processorArchitecture=MSIL">
@@ -314,6 +314,17 @@
     <Compile Include="TreeMatching\SymbolicExpressionTreeNodeComparer.cs" />
     <Compile Include="TreeMatching\SymbolicExpressionTreeNodeEqualityComparer.cs" />
     <Compile Include="TreeMatching\SymbolicExpressionTreePhenotypicSimilarityCalculator.cs" />
+    <Compile Include="Vector\DoubleVector.cs" />
+    <Compile Include="Vector\Grammars\TypeCoherentVectorExpressionGrammar.cs" />
+    <Compile Include="Vector\VectorTreeInterpreter.cs" />
+    <Compile Include="Vector\Symbols\Aggregations.cs" />
+    <Compile Include="Vector\Symbols\Distances.cs" />
+    <Compile Include="Vector\Symbols\SubVector.cs" />
+    <Compile Include="Vector\Symbols\TimeSeriesAggregations.cs" />
+    <Compile Include="Vector\Symbols\WindowedSymbol.cs" />
+    <Compile Include="Vector\Symbols\WindowedSymbolTreeNode.cs" />
+    <Compile Include="Vector\VectorOpCode.cs" />
+    <Compile Include="Vector\VectorTreeSimplifier.cs" />
     <None Include="HeuristicLab.snk" />
     <None Include="Plugin.cs.frame" />
     <None Include="Properties\AssemblyInfo.cs.frame" />
@@ -432,6 +443,7 @@
       <Name>HeuristicLab.Selection-3.3</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
