@@ -45,6 +45,10 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
       set { variableName = value; }
     }
 
+    public override Type DataType {
+      get { return typeof(double); }
+    }
+
     [StorableConstructor]
     private FactorVariableTreeNode(StorableConstructorFlag _) : base(_) { }
     private FactorVariableTreeNode(FactorVariableTreeNode original, Cloner cloner)

@@ -32,6 +32,9 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
     ISymbol Symbol { get; }
     bool HasLocalParameters { get; }
 
+    // Can be null for "unknown"
+    Type DataType { get; }
+
     int GetDepth();
     int GetLength();
     int GetBranchLevel(ISymbolicExpressionTreeNode child);

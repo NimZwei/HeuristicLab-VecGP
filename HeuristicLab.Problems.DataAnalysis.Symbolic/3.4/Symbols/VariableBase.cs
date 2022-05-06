@@ -141,6 +141,17 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
     public override int MaximumArity {
       get { return maximumArity; }
     }
+
+    [Storable]
+    private Type variableDataType;
+    public Type VariableDataType {
+      get { return variableDataType; }
+      set {
+        if (variableDataType == value) return;
+        variableDataType = value;
+        OnChanged(EventArgs.Empty);
+      }
+    }
     #endregion
 
     [StorableHook(HookType.AfterDeserialization)]
@@ -165,6 +176,7 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
       weightManipulatorSigma = original.weightManipulatorSigma;
       multiplicativeWeightManipulatorSigma = original.multiplicativeWeightManipulatorSigma;
       variableChangeProbability = original.variableChangeProbability;
+      variableDataType = original.variableDataType;
     }
     protected VariableBase(string name, string description)
       : base(name, description) {
@@ -176,6 +188,7 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
       variableChangeProbability = 0.2;
       variableNames = new List<string>();
       allVariableNames = new List<string>();
+      variableDataType = null;
     }
   }
 }

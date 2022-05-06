@@ -19,6 +19,7 @@
  */
 #endregion
 
+using System;
 using HeuristicLab.Common;
 using HeuristicLab.Core;
 using HeuristicLab.Encodings.SymbolicExpressionTreeEncoding;
@@ -41,6 +42,10 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
     public string VariableName {
       get { return variableName; }
       set { variableName = value; }
+    }
+
+    public override Type DataType {
+      get { return Symbol.VariableDataType; }
     }
 
     [StorableConstructor]

@@ -95,6 +95,10 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
       get { return false; }
     }
 
+    public virtual Type DataType {
+      get { return null; }
+    }
+
     public virtual IEnumerable<ISymbolicExpressionTreeNode> Subtrees {
       get { return subtrees; }
     }
