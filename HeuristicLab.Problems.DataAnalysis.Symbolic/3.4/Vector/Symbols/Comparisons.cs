@@ -36,6 +36,26 @@ public sealed class Covariance : Symbol {
   public Covariance() : base("Covariance", "Symbol that represents the covariance function.") { }
 }
 
+[Item("PearsonCorrelationCoefficient", "Symbol that represents the Pearson correlation coefficient function."), StorableType("7F4847D2-D100-48EA-AD76-14A93ED82697")]
+public sealed class PearsonCorrelationCoefficient : Symbol {
+  public override int MinimumArity => 2;
+  public override int MaximumArity => 2;
+  [StorableConstructor] private PearsonCorrelationCoefficient(StorableConstructorFlag _) : base(_) { }
+  private PearsonCorrelationCoefficient(PearsonCorrelationCoefficient original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new PearsonCorrelationCoefficient(this, cloner); }
+  public PearsonCorrelationCoefficient() : base("PearsonCorrelationCoefficient", "Symbol that represents the Pearson correlation coefficient function.") { }
+}
+
+[Item("SpearmanRankCorrelationCoefficient", "Symbol that represents the Spearman rank correlation coefficient function."), StorableType("8122C746-AC77-4D0C-8082-AF1D919DC0C3")]
+public sealed class SpearmanRankCorrelationCoefficient : Symbol {
+  public override int MinimumArity => 2;
+  public override int MaximumArity => 2;
+  [StorableConstructor] private SpearmanRankCorrelationCoefficient(StorableConstructorFlag _) : base(_) { }
+  private SpearmanRankCorrelationCoefficient(SpearmanRankCorrelationCoefficient original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new SpearmanRankCorrelationCoefficient(this, cloner); }
+  public SpearmanRankCorrelationCoefficient() : base("SpearmanRankCorrelationCoefficient", "Symbol that represents the Spearman rank correlation coefficient function.") { }
+}
+
 [Item("Euclidean Distance", "Symbol that represents the Euclidean distance function."), StorableType("5477A8C6-E557-4E2E-9326-16DF26F5D6A8")]
 public sealed class EuclideanDistance : Symbol {
   public override int MinimumArity => 2;

@@ -318,7 +318,7 @@
     <Compile Include="Vector\Grammars\TypeCoherentVectorExpressionGrammar.cs" />
     <Compile Include="Vector\VectorTreeInterpreter.cs" />
     <Compile Include="Vector\Symbols\Aggregations.cs" />
-    <Compile Include="Vector\Symbols\Distances.cs" />
+    <Compile Include="Vector\Symbols\Comparisons.cs" />
     <Compile Include="Vector\Symbols\SubVector.cs" />
     <Compile Include="Vector\Symbols\TimeSeriesAggregations.cs" />
     <Compile Include="Vector\Symbols\WindowedSymbol.cs" />

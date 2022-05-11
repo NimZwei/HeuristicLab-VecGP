@@ -584,15 +584,29 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
       case VectorOpCodes.Skewness: {
         var cur = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
-          s => double.NaN,
+          s => 0,
           v => DoubleVector.Skewness(v));
         return cur;
       }
       case VectorOpCodes.Kurtosis: {
         var cur = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
-          s => double.NaN,
+          s => 0,
           v => DoubleVector.Kurtosis(v));
+        return cur;
+      }
+      case VectorOpCodes.MeanDeviation: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => 0,
+          v => DoubleVector.MeanDeviation(v));
+        return cur;
+      }
+      case VectorOpCodes.InterquartileRange: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => 0,
+          v => DoubleVector.IQR(v));
         return cur;
       }
       case VectorOpCodes.EuclideanDistance: {
@@ -615,6 +629,28 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           (s1, v2) => 0,
           (v1, s2) => 0,
           (v1, v2) => DoubleVector.Covariance(v1, v2));
+        return cur;
+      }
+      case VectorOpCodes.PearsonCorrelationCoefficient: {
+        var x1 = Evaluate(dataset, ref row, state);
+        var x2 = Evaluate(dataset, ref row, state);
+        var cur = AggregateMultipleApply(x1, x2,
+          (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs, 0.0),
+          (s1, s2) => 0,
+          (s1, v2) => 0,
+          (v1, s2) => 0,
+          (v1, v2) => DoubleVector.PearsonCorrelation(v1, v2));
+        return cur;
+      }
+      case VectorOpCodes.SpearmanRankCorrelationCoefficient: {
+        var x1 = Evaluate(dataset, ref row, state);
+        var x2 = Evaluate(dataset, ref row, state);
+        var cur = AggregateMultipleApply(x1, x2,
+          (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs, 0.0),
+          (s1, s2) => 0,
+          (s1, v2) => 0,
+          (v1, s2) => 0,
+          (v1, v2) => DoubleVector.SpearmanRankCorrelation(v1, v2));
         return cur;
       }
       case VectorOpCodes.SubVector: {

@@ -77,6 +77,26 @@ public sealed class StandardDeviation : Symbol {
   public StandardDeviation() : base("StandardDeviation", "Symbol that represents the standard deviation function.") { }
 }
 
+[Item("MeanDeviation", "Symbol that represents the mean deviation function."), StorableType("C50BC0F4-D83E-4625-94A6-D65E89213822")]
+public sealed class MeanDeviation : Symbol {
+  public override int MinimumArity => 1;
+  public override int MaximumArity => 1;
+  [StorableConstructor] private MeanDeviation(StorableConstructorFlag _) : base(_) { }
+  private MeanDeviation(MeanDeviation original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new MeanDeviation(this, cloner); }
+  public MeanDeviation() : base("MeanDeviation", "Symbol that represents the mean deviation function.") { }
+}
+
+[Item("InterquartileRange", "Symbol that represents the interquartile range function."), StorableType("EF7BF05A-CCFE-47ED-9ECC-8E7A93D664AD")]
+public sealed class InterquartileRange : Symbol {
+  public override int MinimumArity => 1;
+  public override int MaximumArity => 1;
+  [StorableConstructor] private InterquartileRange(StorableConstructorFlag _) : base(_) { }
+  private InterquartileRange(InterquartileRange original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new InterquartileRange(this, cloner); }
+  public InterquartileRange() : base("InterquartileRange", "Symbol that represents the interquartile range function.") { }
+}
+
 [Item("Variance", "Symbol that represents the variance function."), StorableType("E9371D4B-104A-43CF-82F9-4F3B41B2FC3D")]
 public sealed class Variance : Symbol {
   public override int MinimumArity => 1;

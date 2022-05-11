@@ -34,6 +34,8 @@ public enum VectorOpCode : byte {
   Variance = 104,
   Skewness = 105,
   Kurtosis = 106,
+  MeanDeviation = 107,
+  InterquartileRange = 108,
 
   Min = 110,
   Max = 111,
@@ -42,6 +44,8 @@ public enum VectorOpCode : byte {
 
   EuclideanDistance = 120,
   Covariance = 121,
+  PearsonCorrelationCoefficient = 122,
+  SpearmanRankCorrelationCoefficient = 123,
 
   SubVector = 130,
   SubVectorSubtree = 131,
@@ -94,8 +98,12 @@ public static class VectorOpCodes {
   public const byte Variance = (byte)VectorOpCode.Variance;
   public const byte Skewness = (byte)VectorOpCode.Skewness;
   public const byte Kurtosis = (byte)VectorOpCode.Kurtosis;
+  public const byte MeanDeviation = (byte)VectorOpCode.MeanDeviation;
+  public const byte InterquartileRange = (byte)VectorOpCode.InterquartileRange;
   public const byte EuclideanDistance = (byte)VectorOpCode.EuclideanDistance;
   public const byte Covariance = (byte)VectorOpCode.Covariance;
+  public const byte PearsonCorrelationCoefficient = (byte)VectorOpCode.PearsonCorrelationCoefficient;
+  public const byte SpearmanRankCorrelationCoefficient = (byte)VectorOpCode.SpearmanRankCorrelationCoefficient;
   public const byte SubVector = (byte)VectorOpCode.SubVector;
   public const byte SubVectorSubtree = (byte)VectorOpCode.SubVectorSubtree;
   #region Time Series Symbols
@@ -146,8 +154,12 @@ public static class VectorOpCodes {
     { typeof(Variance), VectorOpCode.Variance },
     { typeof(Skewness), VectorOpCode.Skewness },
     { typeof(Kurtosis), VectorOpCode.Kurtosis },
+    { typeof(MeanDeviation), VectorOpCode.MeanDeviation },
+    { typeof(InterquartileRange), VectorOpCode.InterquartileRange },
     { typeof(EuclideanDistance), VectorOpCode.EuclideanDistance },
     { typeof(Covariance), VectorOpCode.Covariance },
+    { typeof(PearsonCorrelationCoefficient), VectorOpCode.PearsonCorrelationCoefficient },
+    { typeof(SpearmanRankCorrelationCoefficient), VectorOpCode.SpearmanRankCorrelationCoefficient },
     { typeof(SubVector), VectorOpCode.SubVector },
     { typeof(SubVectorSubtree), VectorOpCode.SubVectorSubtree },
 

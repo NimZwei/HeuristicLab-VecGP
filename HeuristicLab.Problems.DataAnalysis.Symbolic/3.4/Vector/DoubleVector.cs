@@ -348,7 +348,15 @@ internal class DoubleVector : Vector<double> {
     if (lhs.Length != rhs.Length) throw new InvalidOperationException($"Vector lengths do not match ({lhs.Length} != {rhs.Length}");
     return alglib.cov2(lhs.values, rhs.values, lhs.Length);
   }
-  
+  public static double PearsonCorrelation(DoubleVector lhs, DoubleVector rhs) {
+    if (lhs.Length != rhs.Length) throw new InvalidOperationException($"Vector lengths do not match ({lhs.Length} != {rhs.Length}");
+    return alglib.pearsoncorr2(lhs.values, rhs.values, lhs.Length);
+  }
+  public static double SpearmanRankCorrelation(DoubleVector lhs, DoubleVector rhs) {
+    if (lhs.Length != rhs.Length) throw new InvalidOperationException($"Vector lengths do not match ({lhs.Length} != {rhs.Length}");
+    return alglib.spearmancorr2(lhs.values, rhs.values, lhs.Length);
+  }
+
   public static DoubleVector SubVector(DoubleVector v, int startIdx, int count) {
     return SubVector(v, startIdx, startIdx + count, false);
   }
