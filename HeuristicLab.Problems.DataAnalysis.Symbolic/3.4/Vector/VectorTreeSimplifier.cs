@@ -69,11 +69,16 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
 
     private readonly VectorTreeInterpreter interpreter;
 
-    public VectorTreeSimplifier(VectorTreeInterpreter interpreter) {
+    public static ISymbolicExpressionTree Simplify(ISymbolicExpressionTree originalTree, VectorTreeInterpreter interpreter) {
+      var simplifier = new VectorTreeSimplifier(interpreter);
+      return simplifier.Simplify(originalTree);
+    }
+
+    private VectorTreeSimplifier(VectorTreeInterpreter interpreter) {
       this.interpreter = interpreter;
     }
 
-    public ISymbolicExpressionTree Simplify(ISymbolicExpressionTree originalTree) {
+    private ISymbolicExpressionTree Simplify(ISymbolicExpressionTree originalTree) {
       var clone = (ISymbolicExpressionTreeNode)originalTree.Root.Clone();
       // macro expand (initially no argument trees)
       var macroExpandedTree = MacroExpand(clone, clone.GetSubtree(0), new List<ISymbolicExpressionTreeNode>());

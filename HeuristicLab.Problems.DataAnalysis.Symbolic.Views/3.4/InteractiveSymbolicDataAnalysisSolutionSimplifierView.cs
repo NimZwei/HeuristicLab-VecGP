@@ -31,6 +31,7 @@ using HeuristicLab.Encodings.SymbolicExpressionTreeEncoding;
 using HeuristicLab.Encodings.SymbolicExpressionTreeEncoding.Views;
 using HeuristicLab.MainForm;
 using HeuristicLab.MainForm.WindowsForms;
+using HeuristicLab.Problems.DataAnalysis.Symbolic.Vector;
 
 namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Views {
   public abstract partial class InteractiveSymbolicDataAnalysisSolutionSimplifierView : AsynchronousContentView {
@@ -331,7 +332,9 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Views {
     }
 
     private void btnSimplify_Click(object sender, EventArgs e) {
-      var simplifiedExpressionTree = TreeSimplifier.Simplify(Content.Model.SymbolicExpressionTree);
+      var simplifiedExpressionTree = Content.Model.Interpreter is VectorTreeInterpreter vectorInterpreter 
+        ? VectorTreeSimplifier.Simplify(Content.Model.SymbolicExpressionTree, vectorInterpreter) 
+        : TreeSimplifier.Simplify(Content.Model.SymbolicExpressionTree);
       UpdateModel(simplifiedExpressionTree);
     }
 
