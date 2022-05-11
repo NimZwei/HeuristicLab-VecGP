@@ -137,7 +137,9 @@ internal abstract class Vector<T> : IVector, IEquatable<Vector<T>>, IEnumerable<
 internal class DoubleVector : Vector<double> {
 
   public static readonly DoubleVector NaN = new DoubleVector(new[] { double.NaN });
-  
+
+  public bool IsFinite => alglib.apserv.isfinitevector(values, Length, null);
+
   public DoubleVector(IEnumerable<double> values)  // clone
   : base (values.ToArray()) { 
     if (Length == 0) throw new InvalidOperationException("No empty vectors allowed");
@@ -161,9 +163,7 @@ internal class DoubleVector : Vector<double> {
   public static DoubleVector BinaryApply(DoubleVector lhs, DoubleVector rhs, Func<double, double, double> func) {
     return new DoubleVector(Broadcast(lhs, rhs, func));
   }
-
-
-
+  
 
   public static implicit operator DoubleVector(double scalar) {
     return new DoubleVector(new[] { scalar });
@@ -268,11 +268,7 @@ internal class DoubleVector : Vector<double> {
   }
 
   public static double Sum(DoubleVector v) {
-    double sum = 0.0;
-    for (int i = 0; i < v.Length; i++) {
-      sum += v.values[i];
-    }
-    return sum;
+    return v.Sum();
   }
 
   public static double Mean(DoubleVector v) {

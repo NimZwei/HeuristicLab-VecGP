@@ -275,23 +275,41 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
   }
 
   internal readonly struct EvaluationResult {
+    private enum Type {
+      Scalar, Vector, Undefined
+    }
+
+    private readonly Type type;
+
     public double Scalar { get; }
-    public bool IsScalar => !double.IsNaN(Scalar);
+    public bool IsScalar => type == Type.Scalar;
 
     public DoubleVector Vector { get; }
-    public bool IsVector => !(Vector.Length == 1 && double.IsNaN(Vector[0]));
+    public bool IsVector => type == Type.Vector;
 
-    public bool IsNaN => !IsScalar && !IsVector;
+    public bool IsUndefined => type == Type.Undefined;
+
+    public bool IsFinite {
+      get {
+        if (IsUndefined) return false;
+        if (IsScalar) return !double.IsNaN(Scalar) && !double.IsInfinity(Scalar);
+        if (IsVector) return Vector.IsFinite;
+        return false;
+      }
+    }
 
     public EvaluationResult(double scalar) {
+      type = Type.Scalar;
       Scalar = scalar;
       Vector = DoubleVector.NaN;
     }
     public EvaluationResult(DoubleVector vector) {
+      type = Type.Vector;
       Scalar = double.NaN;
       Vector = vector;
     }
     public EvaluationResult() {
+      type = Type.Undefined;
       Scalar = double.NaN;
       Vector = DoubleVector.NaN;
     }
@@ -299,10 +317,10 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
     public override string ToString() {
       if (IsScalar) return Scalar.ToString();
       if (IsVector) return Vector.ToString();
-      return "NaN";
+      return "Undefined";
     }
 
-    public static readonly EvaluationResult NaN = new EvaluationResult();
+    public static readonly EvaluationResult Undefined = new EvaluationResult();
   }
 
   private static EvaluationResult ArithmeticApply(EvaluationResult lhs, EvaluationResult rhs,
@@ -312,6 +330,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
      Func<DoubleVector, double, DoubleVector> vsFunc = null,
      Func<DoubleVector, DoubleVector, DoubleVector> vvFunc = null) {
 
+    if (!lhs.IsFinite || !rhs.IsFinite) return EvaluationResult.Undefined;
     if (lhs.IsScalar && rhs.IsScalar && ssFunc != null) return new EvaluationResult(ssFunc(lhs.Scalar, rhs.Scalar));
     if (lhs.IsScalar && rhs.IsVector && svFunc != null) return new EvaluationResult(svFunc(lhs.Scalar, rhs.Vector));
     if (lhs.IsVector && rhs.IsScalar && vsFunc != null) return new EvaluationResult(vsFunc(lhs.Vector, rhs.Scalar));
@@ -323,22 +342,24 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
         return new EvaluationResult(vvFunc(lhsVector, rhsVector));
       }
     }
-    return EvaluationResult.NaN;
+    return EvaluationResult.Undefined;
   }
 
   private static EvaluationResult FunctionApply(EvaluationResult val,
     Func<double, double> sFunc = null,
     Func<DoubleVector, DoubleVector> vFunc = null) {
+    if (!val.IsFinite) return EvaluationResult.Undefined;
     if (val.IsScalar && sFunc != null) return new EvaluationResult(sFunc(val.Scalar));
     if (val.IsVector && vFunc != null) return new EvaluationResult(vFunc(val.Vector));
-    return EvaluationResult.NaN;
+    return EvaluationResult.Undefined;
   }
   private static EvaluationResult AggregateApply(EvaluationResult val,
     Func<double, double> sFunc = null,
     Func<DoubleVector, double> vFunc = null) {
+    if (!val.IsFinite) return EvaluationResult.Undefined;
     if (val.IsScalar && sFunc != null) return new EvaluationResult(sFunc(val.Scalar));
     if (val.IsVector && vFunc != null) return new EvaluationResult(vFunc(val.Vector));
-    return EvaluationResult.NaN;
+    return EvaluationResult.Undefined;
   }
   
   private static EvaluationResult AggregateMultipleApply(EvaluationResult lhs, EvaluationResult rhs,
@@ -347,6 +368,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
     Func<double, DoubleVector, double> svFunc = null,
     Func<DoubleVector, double, double> vsFunc = null,
     Func<DoubleVector, DoubleVector, double> vvFunc = null) {
+    if (!lhs.IsFinite || !rhs.IsFinite) return EvaluationResult.Undefined;
     if (lhs.IsScalar && rhs.IsScalar && ssFunc != null) return new EvaluationResult(ssFunc(lhs.Scalar, rhs.Scalar));
     if (lhs.IsScalar && rhs.IsVector && svFunc != null) return new EvaluationResult(svFunc(lhs.Scalar, rhs.Vector));
     if (lhs.IsVector && rhs.IsScalar && vsFunc != null) return new EvaluationResult(vsFunc(lhs.Vector, rhs.Scalar));
@@ -358,7 +380,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
         return new EvaluationResult(vvFunc(lhsVector, rhsVector));
       }
     }
-    return EvaluationResult.NaN;
+    return EvaluationResult.Undefined;
   }
 
   public virtual Type GetNodeType(ISymbolicExpressionTreeNode node) {
@@ -677,7 +699,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
         );
       }
       case OpCodes.Variable: {
-        if (row < 0 || row >= dataset.Rows) return EvaluationResult.NaN;
+        if (row < 0 || row >= dataset.Rows) return EvaluationResult.Undefined;
         var variableTreeNode = (VariableTreeNode)currentInstr.dynamicNode;
         if (currentInstr.data is IList<double> doubleList) {
           var cur = new EvaluationResult(doubleList[row] * variableTreeNode.Weight);
@@ -691,13 +713,13 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
         throw new NotSupportedException($"Unsupported type of variable: {currentInstr.data.GetType().GetPrettyName()}");
       }
       case OpCodes.BinaryFactorVariable: {
-        if (row < 0 || row >= dataset.Rows) return EvaluationResult.NaN;
+        if (row < 0 || row >= dataset.Rows) return EvaluationResult.Undefined;
         var factorVarTreeNode = currentInstr.dynamicNode as BinaryFactorVariableTreeNode;
         var cur = new EvaluationResult(((IList<string>)currentInstr.data)[row] == factorVarTreeNode.VariableValue ? factorVarTreeNode.Weight : 0);
         return cur;
       }
       case OpCodes.FactorVariable: {
-        if (row < 0 || row >= dataset.Rows) return EvaluationResult.NaN;
+        if (row < 0 || row >= dataset.Rows) return EvaluationResult.Undefined;
         var factorVarTreeNode = currentInstr.dynamicNode as FactorVariableTreeNode;
         var cur = new EvaluationResult(factorVarTreeNode.GetValue(((IList<string>)currentInstr.data)[row]));
         return cur;
