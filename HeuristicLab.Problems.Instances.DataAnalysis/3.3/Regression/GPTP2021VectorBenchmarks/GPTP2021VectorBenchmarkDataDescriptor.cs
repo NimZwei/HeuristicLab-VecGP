@@ -24,9 +24,9 @@ using System.Linq;
 namespace HeuristicLab.Problems.Instances.DataAnalysis;
 
 public class GPTP2021VectorBenchmarkDataDescriptor : ResourceRegressionDataDescriptor {
-  public GPTP2021VectorBenchmarkDataDescriptor(string name, string[] allowedInputVariables, string targetVariable = "y",
+  public GPTP2021VectorBenchmarkDataDescriptor(string name, string resourceName, string[] allowedInputVariables, string targetVariable = "y",
     int trainingPartitionStart = 0, int trainingPartitionEnd = 750, int testPartitionStart = 750, int testPartitionEnd = 1000)
-    : base(name + ".csv") {
+    : base(resourceName + ".csv") {
     Name = name;
     AllowedInputVariables = allowedInputVariables;
     TargetVariable = targetVariable;
@@ -35,6 +35,9 @@ public class GPTP2021VectorBenchmarkDataDescriptor : ResourceRegressionDataDescr
     TestPartitionStart = testPartitionStart;
     TestPartitionEnd = testPartitionEnd;
   }
+  public GPTP2021VectorBenchmarkDataDescriptor(string name, string[] allowedInputVariables, string targetVariable = "y",
+    int trainingPartitionStart = 0, int trainingPartitionEnd = 750, int testPartitionStart = 750, int testPartitionEnd = 1000)
+    : this(name, name, allowedInputVariables, targetVariable, trainingPartitionStart, trainingPartitionEnd, testPartitionStart, testPartitionEnd) { }
   public override string Name { get; }
   public override string Description { get { return ""; } }
   protected override string TargetVariable { get; }

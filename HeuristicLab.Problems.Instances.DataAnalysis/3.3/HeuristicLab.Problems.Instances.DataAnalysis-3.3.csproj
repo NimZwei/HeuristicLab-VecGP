@@ -394,6 +394,8 @@
     <EmbeddedResource Include="Regression\Data\MibaFriction.zip" />
     <EmbeddedResource Include="Regression\Data\PennML.zip" />
     <EmbeddedResource Include="Regression\Data\GPTP2021VectorBenchmarks.zip" />
+    <EmbeddedResource Include="Regression\Data\GPTP2021VectorBenchmarks.pre_aggregated.zip" />
+    <EmbeddedResource Include="Regression\Data\GPTP2021VectorBenchmarks.unrolled.zip" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\HeuristicLab.Collections\3.3\HeuristicLab.Collections-3.3.csproj">
