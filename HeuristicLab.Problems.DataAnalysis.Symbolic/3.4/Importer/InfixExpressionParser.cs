@@ -27,6 +27,7 @@ using System.Text;
 using HeuristicLab.Collections;
 using HeuristicLab.Common;
 using HeuristicLab.Encodings.SymbolicExpressionTreeEncoding;
+using HeuristicLab.Problems.DataAnalysis.Symbolic.Vector;
 
 namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
   /// <summary>
@@ -130,7 +131,7 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
         { "DAWSON", new Dawson()},
         { "EXPINT", new ExponentialIntegralEi()},
         { "AQ", new AnalyticQuotient() },
-        { "MEAN", new Average()},
+        { "AVG", new Average()},
         { "IF", new IfThenElse()},
         { "GT", new GreaterThan()},
         { "LT", new LessThan()},
@@ -140,8 +141,12 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
         { "XOR", new Xor()},
         { "DIFF", new Derivative()},
         { "LAG", new LaggedVariable() },
+        { "SUM", new Sum() },
+        { "MEAN", new Mean() },
+        { "LENGTH", new Length() },
+        { "STDEV", new StandardDeviation() },
+        { "VAR", new Variance() },
       };
-
 
       foreach (var kvp in dict) {
         knownSymbols.Add(kvp.Key, kvp.Value);

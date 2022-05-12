@@ -27,6 +27,7 @@ using HEAL.Attic;
 using HeuristicLab.Common;
 using HeuristicLab.Core;
 using HeuristicLab.Encodings.SymbolicExpressionTreeEncoding;
+using HeuristicLab.Problems.DataAnalysis.Symbolic.Vector;
 
 namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
   [Item("LaTeX String Formatter", "Formatter for symbolic expression trees for import into LaTeX documents.")]
@@ -237,7 +238,9 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
           parameters.Add(new KeyValuePair<string, double>(paramName, varNode.Weight));
           paramIdx++;
         }
+        if (varNode.DataType == typeof(double[])) strBuilder.Append("\\boldsymbol{");
         strBuilder.Append(EscapeLatexString(varNode.VariableName));
+        if (varNode.DataType == typeof(double[])) strBuilder.Append("}"); // boldsymbol end
         strBuilder.Append(LagToString(currentLag));
       } else if (node.Symbol is ProgramRootSymbol) {
         strBuilder
@@ -278,6 +281,16 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
         parameters.Add(new KeyValuePair<string, double>(const2Name, conditionTreeNode.Threshold));
         paramIdx++;
         strBuilder.Append(@" \left( " + p + @"\cdot ");
+      } else if (node.Symbol is Sum) {
+        strBuilder.Append(@"\operatorname{sum}\left(");
+      } else if (node.Symbol is Mean) {
+        strBuilder.Append(@"\operatorname{mean}\left(");
+      } else if (node.Symbol is Length) {
+        strBuilder.Append(@"\operatorname{length}\left(");
+      } else if (node.Symbol is StandardDeviation) {
+        strBuilder.Append(@"\operatorname{stdev}\left(");
+      } else if (node.Symbol is Variance) {
+        strBuilder.Append(@"\operatorname{var}\left(");
       } else if (node.Symbol is SubFunctionSymbol) {
         // to nothing, skip symbol
       } else {
@@ -514,6 +527,16 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
         strBuilder.Append(@" \right) ");
       } else if (node.Symbol is VariableCondition) {
         strBuilder.Append(@"\right) ");
+      } else if (node.Symbol is Sum) {
+        strBuilder.Append(@"\right) ");
+      } else if (node.Symbol is Mean) {
+        strBuilder.Append(@"\right) ");
+      } else if (node.Symbol is Length) {
+        strBuilder.Append(@"\right) ");
+      } else if (node.Symbol is StandardDeviation) {
+        strBuilder.Append(@"\right) ");
+      } else if (node.Symbol is Variance) {
+        strBuilder.Append(@"\right) ");
       } else if (node.Symbol is SubFunctionSymbol) {
       } else {
         throw new NotImplementedException("Export of " + node.Symbol + " is not implemented.");
@@ -521,7 +544,7 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
     }
 
     private void FormatStartSymbol(StringBuilder strBuilder) {
-      strBuilder.Append(targetVariable != null ? EscapeLatexString(targetVariable) : "\\text{target}_{" + targetCount++ + "}");
+      strBuilder.Append(targetVariable != null ? EscapeLatexString(targetVariable) : "\\mathrm{target}_{" + targetCount++ + "}");
       if (containsTimeSeriesSymbol)
         strBuilder.Append("(t)");
       strBuilder.Append(" & = ");
@@ -536,7 +559,7 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
     }
 
     private string EscapeLatexString(string s) {
-      return "\\text{" +
+      return "\\mathrm{" +
         s
          .Replace("\\", "\\\\")
          .Replace("{", "\\{")
