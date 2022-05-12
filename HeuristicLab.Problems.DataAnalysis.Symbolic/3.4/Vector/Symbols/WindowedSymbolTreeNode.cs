@@ -86,22 +86,7 @@ public class WindowedSymbolTreeNode : SymbolicExpressionTreeNode {
       End += NormalDistributedRandom.NextDouble(random, Symbol.ManipulatorLengthMu, Symbol.ManipulatorLengthSigma) * shakingFactor;
     }
   }
-
-  internal (int StartIdx, int EndIdx) GetIndices(IVector v) {
-    if (Symbol.EnableWindowing) {
-      return GetIndices(v.Length, Start, End, Symbol.AllowRoundTrip);
-    } else {
-      return (0, v.Length);
-    }
-  }
-  internal static (int StartIdx, int EndIdx) GetIndices(int vectorLength, double start, double end, bool allowRoundTrip) {
-    int startIdx = (int)start * vectorLength, endIdx = (int)end * vectorLength;
-    if (allowRoundTrip)
-      return (startIdx, endIdx);
-    else
-      return (Math.Min(startIdx, endIdx), Math.Max(startIdx, endIdx));
-  }
-
+  
   public override string ToString() {
     return Symbol.EnableWindowing
       ? base.ToString() + $"[{Start:f3} : {End:f3}]"

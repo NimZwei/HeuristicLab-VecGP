@@ -29,7 +29,6 @@ using HeuristicLab.Core;
 
 namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Vector;
 
-//[Item("Vector", "Stores a generic vector for vector-basesd data analysis.")]
 [StorableType("53926D41-3FCE-4A7C-810C-10758774B575")]
 internal interface IVector {
   public int Length { get; }
@@ -48,7 +47,7 @@ internal abstract class Vector<T> : IVector, IEquatable<Vector<T>>, IEnumerable<
   }
   
   protected void CopySubVectorTo(Vector<T> destination, int sourceIndex, int targetIndex, int count) {
-    if (this == destination) {
+    if (ReferenceEquals(this, destination)) {
       var temp = new T[count];
       for (int i = 0; i < temp.Length; i++)
         temp[i] = this[i + sourceIndex];
@@ -91,8 +90,10 @@ internal abstract class Vector<T> : IVector, IEquatable<Vector<T>>, IEnumerable<
 
   public bool Equals(Vector<T> other) {
     if (ReferenceEquals(this, other)) return true;
+    if (this.GetType() != other.GetType()) return false;
+    if (this.values.Length != other.values.Length) return false;
     for (int i = 0; i < values.Length; i++) {
-      if (!this[i].Equals(other[i])) return false;
+      if (!values[i].Equals(other.values[i])) return false;
     }
     return true;
   }
@@ -102,7 +103,14 @@ internal abstract class Vector<T> : IVector, IEquatable<Vector<T>>, IEnumerable<
     else return false;
   }
   public override int GetHashCode() {
-    return values.GetHashCode();
+    int hash = 17;
+    unchecked {
+      for (int i = 0; i < values.Length; i++) {
+        hash = hash * 31 + values[i].GetHashCode();
+      }
+    }
+
+    return hash;
   }
 
   public IEnumerator<T> GetEnumerator() {
@@ -114,7 +122,7 @@ internal abstract class Vector<T> : IVector, IEquatable<Vector<T>>, IEnumerable<
 
   public T this[int index] {
     get { return values[index]; }
-    protected set { values[index] = value; }
+    private set { values[index] = value; }
   }
 
   protected static IEnumerable<TResult> Broadcast<TResult>(Vector<T> lhs, Vector<T> rhs, Func<T, T, TResult> func) {
@@ -144,23 +152,22 @@ internal class DoubleVector : Vector<double> {
   : base (values.ToArray()) { 
     if (Length == 0) throw new InvalidOperationException("No empty vectors allowed");
   }
-
-  //private DoubleVector(double[] values) { // reference, therefore private
-  //  this.values = values;
-  // }
-
+  
   public override string ToString() {
     return ToString(",", "[", "]", 20);
   }
-  protected string ToString(string separator, string beginWrap = "", string endWrap = "", int maxEllipsisLength = int.MaxValue,
+  public string ToString(string separator, string beginWrap = "", string endWrap = "", int maxEllipsisLength = int.MaxValue,
     string format = null, IFormatProvider formatProvider = null) {
     return ToString(separator, beginWrap, endWrap, maxEllipsisLength, x => x.ToString(format, formatProvider));
   }
 
+  public override bool Equals(object obj) { return base.Equals(obj); }
+  public override int GetHashCode() { return base.GetHashCode(); }
+
   private static DoubleVector UnaryApply(DoubleVector v, Func<double, double> func) {
     return new DoubleVector(v.Select(func));
   }
-  public static DoubleVector BinaryApply(DoubleVector lhs, DoubleVector rhs, Func<double, double, double> func) {
+  private static DoubleVector BinaryApply(DoubleVector lhs, DoubleVector rhs, Func<double, double, double> func) {
     return new DoubleVector(Broadcast(lhs, rhs, func));
   }
   
@@ -357,6 +364,9 @@ internal class DoubleVector : Vector<double> {
     return SubVector(v, startIdx, startIdx + count, false);
   }
   public static DoubleVector SubVector(DoubleVector v, int startIdx, int endIdx, bool allowRoundTrip) {
+    if (!allowRoundTrip && startIdx > endIdx)
+      throw new InvalidOperationException("EndIndex must come after StartIndex if RoundTrip is not allowed.");
+    
     var slices = GetVectorSlices(startIdx, endIdx, v.Length).ToList();
     var totalSize = slices.Sum(s => s.Count);
     var resultVector = new DoubleVector(new double [totalSize]);
@@ -403,22 +413,21 @@ internal class BoolVector : Vector<bool> {
     if (Length == 0) throw new InvalidOperationException("No empty vectors allowed");
   }
 
-  //private DoubleVector(double[] values) { // reference, therefore private
-  //  this.values = values;
-  // }
-
   public override string ToString() {
     return ToString(",", "[", "]", 20);
   }
-  protected string ToString(string separator, string beginWrap = "", string endWrap = "", int maxEllipsisLength = int.MaxValue,
+  public string ToString(string separator, string beginWrap = "", string endWrap = "", int maxEllipsisLength = int.MaxValue,
     IFormatProvider formatProvider = null) {
     return ToString(separator, beginWrap, endWrap, maxEllipsisLength, x => x.ToString(formatProvider));
   }
 
+  public override bool Equals(object obj) { return base.Equals(obj); }
+  public override int GetHashCode() { return base.GetHashCode(); }
+  
   private static BoolVector UnaryApply(BoolVector v, Func<bool, bool> func) {
     return new BoolVector(v.Select(func));
   }
-  public static BoolVector BinaryApply(BoolVector lhs, BoolVector rhs, Func<bool, bool, bool> func) {
+  private static BoolVector BinaryApply(BoolVector lhs, BoolVector rhs, Func<bool, bool, bool> func) {
     return new BoolVector(Broadcast(lhs, rhs, func));
   }
 

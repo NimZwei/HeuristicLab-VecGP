@@ -263,7 +263,7 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
       return interpreter.GetNodeType(node) == typeof(double);
     }
     public bool IsVectorNode(ISymbolicExpressionTreeNode node) {
-      return interpreter.GetNodeType(node) == typeof(DoubleVector);
+      return interpreter.GetNodeType(node) == typeof(double[]);
     }
     #endregion
 

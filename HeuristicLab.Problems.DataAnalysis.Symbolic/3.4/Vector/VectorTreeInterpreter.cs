@@ -386,13 +386,13 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
   public virtual Type GetNodeType(ISymbolicExpressionTreeNode node) {
     if (node.DataType != null)
       return node.DataType;
-
+  
     if (AggregationSymbols.Contains(node.Symbol.GetType()))
       return typeof(double);
 
     var argumentTypes = node.Subtrees.Select(GetNodeType);
-    if (argumentTypes.Any(t => t == typeof(DoubleVector)))
-      return typeof(DoubleVector);
+    if (argumentTypes.Any(t => t == typeof(double[])))
+      return typeof(double[]);
 
     return typeof(double);
   }
@@ -681,7 +681,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           s => s,
           v => {
             var node = (WindowedSymbolTreeNode)currentInstr.dynamicNode;
-            var (startIdx, endIdx) = node.GetIndices(v);
+            var (startIdx, endIdx) = GetIndices(node, v);
             return DoubleVector.SubVector(v, startIdx, endIdx, node.Symbol.AllowRoundTrip);
           });
       }
@@ -692,8 +692,8 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
         return FunctionApply(cur,
           s => s,
           v => {
-            bool allowRoundTrip = false;
-            var (startIdx, endIdx) = WindowedSymbolTreeNode.GetIndices(v.Length, start.Scalar, end.Scalar, allowRoundTrip);
+            const bool allowRoundTrip = false;
+            var (startIdx, endIdx) = GetIndices(v.Length, start.Scalar, end.Scalar, allowRoundTrip);
             return DoubleVector.SubVector(v, startIdx, endIdx, allowRoundTrip);
           }
         );
@@ -744,7 +744,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
         var q = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
           s => s,
-          v => DoubleVector.Quantile(v, q.Scalar));
+          v => DoubleVector.Quantile(v, LimitTo(q.Scalar, 0.0, 1.0)));
         return cur;
       }
 
@@ -1069,7 +1069,27 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
     }
   }
 
-  #region Time Series Helper
+  #region Helpers
+  private static double LimitTo(double s, double min, double max) {
+    return Math.Min(Math.Max(s, min), max);
+  }
+  
+  private static (int StartIdx, int EndIdx) GetIndices(WindowedSymbolTreeNode node, IVector v) {
+    if (node.Symbol.EnableWindowing) {
+      return GetIndices(v.Length, node.Start, node.End, node.Symbol.AllowRoundTrip);
+    } else {
+      return (0, v.Length);
+    }
+  }
+  private static (int StartIdx, int EndIdx) GetIndices(int vectorLength, double start, double end, bool allowRoundTrip) {
+    int startIdx = (int)(start * vectorLength), endIdx = (int)(end * vectorLength);
+    if (allowRoundTrip) {
+      return (startIdx, endIdx);
+    } else {
+      return (Math.Min(startIdx, endIdx), Math.Max(startIdx, endIdx));
+    }
+  }
+  
   private static int LongestStrikeAbove(DoubleVector v, double threshold) {
     int longestStrike = 0, currentStrike = 0;
     for (int i = 0; i < v.Length; i++) {

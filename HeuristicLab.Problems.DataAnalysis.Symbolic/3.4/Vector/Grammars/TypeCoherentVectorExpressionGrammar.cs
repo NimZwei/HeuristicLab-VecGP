@@ -19,6 +19,7 @@
  */
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using HEAL.Attic;
@@ -89,7 +90,7 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
 
     var constant = new Constant { Enabled = false };
     var number = new Number { MinValue = -20, MaxValue = 20 };
-    var numberZeroToOne = new Number { Name = "Number [0-1]", MinValue = 0, MaxValue = 1 };
+    var numberZeroToOne = new Number { Name = "Number [0-1]", MinValue = 0, MaxValue = 1, Enabled = false };
     var variable = new Variable();
     var binFactorVariable = new BinaryFactorVariable();
     var factorVariable = new FactorVariable();
@@ -273,7 +274,6 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
 
     #region allowed child symbols configuration
     AddAllowedChildSymbol(StartSymbol, scalarSymbols);
-
     AddAllowedChildSymbol(arithmeticSymbols, scalarSymbols);
     AddAllowedChildSymbol(trigonometricSymbols, scalarSymbols);
     AddAllowedChildSymbol(exponentialAndLogarithmicSymbols, scalarSymbols);
@@ -308,6 +308,22 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     AddAllowedChildSymbol(subvectorSubtree, vectorSymbols, 0);
     AddAllowedChildSymbol(subvectorSubtree, scalarSymbols, 1);
     AddAllowedChildSymbol(subvectorSubtree, scalarSymbols, 2);
+    #endregion
+    
+    #region auto-enable
+    void AutoEnable(ISymbol symbol, params ISymbol[] dependentSymbols) {
+      foreach (var dependentSymbol in dependentSymbols) {
+        if (dependentSymbol is GroupSymbol groupSymbol) {
+          foreach (var innerSymbol in groupSymbol.Symbols) AutoEnable(symbol, innerSymbol);
+        } else {
+          dependentSymbol.Changed += (sender, args) => {
+            if (dependentSymbol.Enabled) symbol.Enabled = true;
+          };
+        }
+      }
+    }
+    AutoEnable(numberZeroToOne, quantile, distributionCharacteristicsSymbols, timeSeriesDynamicsSymbols);
+
     #endregion
 
     #region default enabled/disabled
