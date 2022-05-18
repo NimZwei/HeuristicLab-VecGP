@@ -19,6 +19,7 @@
  */
 #endregion
 
+using System;
 using HEAL.Attic;
 using HeuristicLab.Common;
 using HeuristicLab.Core;
@@ -52,6 +53,16 @@ public sealed class AbsoluteEnergy : Symbol {
   public AbsoluteEnergy() : base("AbsoluteEnergy", "") { }
 }
 
+[Item("AugmentedDickeyFullerTestStatistic", ""), StorableType("AA4F63D1-8469-4910-95EA-32B00C5A7B43")]
+public sealed class AugmentedDickeyFullerTestStatistic : Symbol {
+  public override int MinimumArity => 1;
+  public override int MaximumArity => 1;
+  [StorableConstructor] private AugmentedDickeyFullerTestStatistic(StorableConstructorFlag _) : base(_) { }
+  private AugmentedDickeyFullerTestStatistic(AugmentedDickeyFullerTestStatistic original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new AugmentedDickeyFullerTestStatistic(this, cloner); }
+  public AugmentedDickeyFullerTestStatistic() : base("AugmentedDickeyFullerTestStatistic", "") { }
+}
+
 [Item("BinnedEntropy", ""), StorableType("9AB9F4C3-F9AD-4FE6-A1FA-53C578549F34")]
 public sealed class BinnedEntropy : Symbol {
   public override int MinimumArity => 2;
@@ -72,14 +83,14 @@ public sealed class HasLargeStandardDeviation : Symbol {
   public HasLargeStandardDeviation() : base("HasLargeStandardDeviation", "") { }
 }
 
-[Item("HasVarianceLargerThanStd", ""), StorableType("F2C40872-F7F5-45B8-9DDA-072C6479DF2F")]
-public sealed class HasVarianceLargerThanStd : Symbol {
+[Item("HasVarianceLargerThanStdDev", ""), StorableType("F2C40872-F7F5-45B8-9DDA-072C6479DF2F")]
+public sealed class HasVarianceLargerThanStdDev : Symbol {
   public override int MinimumArity => 1;
   public override int MaximumArity => 1;
-  [StorableConstructor] private HasVarianceLargerThanStd(StorableConstructorFlag _) : base(_) { }
-  private HasVarianceLargerThanStd(HasVarianceLargerThanStd original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new HasVarianceLargerThanStd(this, cloner); }
-  public HasVarianceLargerThanStd() : base("HasVarianceLargerThanStd", "") { }
+  [StorableConstructor] private HasVarianceLargerThanStdDev(StorableConstructorFlag _) : base(_) { }
+  private HasVarianceLargerThanStdDev(HasVarianceLargerThanStdDev original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new HasVarianceLargerThanStdDev(this, cloner); }
+  public HasVarianceLargerThanStdDev() : base("HasVarianceLargerThanStdDev", "") { }
 }
 
 [Item("IsSymmetricLooking", ""), StorableType("1C8AE0D5-5454-42A4-BACB-033D1A1669BA")]
@@ -92,6 +103,16 @@ public sealed class IsSymmetricLooking : Symbol {
   public IsSymmetricLooking() : base("IsSymmetricLooking", "") { }
 }
 
+[Item("MassQuantile", ""), StorableType("839E85F6-F48F-4B92-B2CF-C86944D1CFF8")]
+public sealed class MassQuantile : Symbol {
+  public override int MinimumArity => 2;
+  public override int MaximumArity => 2;
+  [StorableConstructor] private MassQuantile(StorableConstructorFlag _) : base(_) { }
+  private MassQuantile(MassQuantile original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new MassQuantile(this, cloner); }
+  public MassQuantile() : base("MassQuantile", "") { }
+}
+
 [Item("NumberDataPointsAboveMean", ""), StorableType("FD9FF3DB-78A6-43D0-89A4-B9FE83D73FFA")]
 public sealed class NumberDataPointsAboveMean : Symbol {
   public override int MinimumArity => 1;
@@ -102,6 +123,7 @@ public sealed class NumberDataPointsAboveMean : Symbol {
   public NumberDataPointsAboveMean() : base("NumberDataPointsAboveMean", "") { }
 }
 
+[Obsolete]
 [Item("NumberDataPointsAboveMedian", ""), StorableType("D0F78A96-D3DD-488F-838B-E7B8A4BF05F1")]
 public sealed class NumberDataPointsAboveMedian : Symbol {
   public override int MinimumArity => 1;
@@ -122,6 +144,7 @@ public sealed class NumberDataPointsBelowMean : Symbol {
   public NumberDataPointsBelowMean() : base("NumberDataPointsBelowMean", "") { }
 }
 
+[Obsolete]
 [Item("NumberDataPointsBelowMedian", ""), StorableType("93BCF4B5-5716-4A89-BEEC-A69EF59C871F")]
 public sealed class NumberDataPointsBelowMedian : Symbol {
   public override int MinimumArity => 1;
@@ -274,6 +297,26 @@ public sealed class LongestStrikeZero : Symbol {
   public LongestStrikeZero() : base("LongestStrikeZero", "") { }
 }
 
+[Item("NumberPeaksOfSize", ""), StorableType("F57A6E86-F2A2-4884-BD29-9C74A694B3B0")]
+public sealed class NumberPeaksOfSize : Symbol {
+  public override int MinimumArity => 2;
+  public override int MaximumArity => 2;
+  [StorableConstructor] private NumberPeaksOfSize(StorableConstructorFlag _) : base(_) { }
+  private NumberPeaksOfSize(NumberPeaksOfSize original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new NumberPeaksOfSize(this, cloner); }
+  public NumberPeaksOfSize() : base("NumberPeaksOfSize", "") { }
+}
+
+[Item("LargeNumberOfPeaks", ""), StorableType("0E0EF4C6-0FA7-45C0-92C1-245392B33040")]
+public sealed class LargeNumberOfPeaks : Symbol {
+  public override int MinimumArity => 3;
+  public override int MaximumArity => 3;
+  [StorableConstructor] private LargeNumberOfPeaks(StorableConstructorFlag _) : base(_) { }
+  private LargeNumberOfPeaks(LargeNumberOfPeaks original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new LargeNumberOfPeaks(this, cloner); }
+  public LargeNumberOfPeaks() : base("LargeNumberOfPeaks", "") { }
+}
+
 [Item("MeanAbsoluteChange", ""), StorableType("43E6AB4F-BDF4-42B5-84DF-D384C3FFA728")]
 public sealed class MeanAbsoluteChange : Symbol {
   public override int MinimumArity => 1;
@@ -294,16 +337,6 @@ public sealed class MeanAbsoluteChangeQuantiles : Symbol {
   public MeanAbsoluteChangeQuantiles() : base("MeanAbsoluteChangeQuantiles", "") { }
 }
 
-[Item("MeanAutocorrelation", ""), StorableType("589F8A85-1332-4B9D-B85E-F81CF2E46C58")]
-public sealed class MeanAutocorrelation : Symbol {
-  public override int MinimumArity => 1;
-  public override int MaximumArity => 1;
-  [StorableConstructor] private MeanAutocorrelation(StorableConstructorFlag _) : base(_) { }
-  private MeanAutocorrelation(MeanAutocorrelation original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new MeanAutocorrelation(this, cloner); }
-  public MeanAutocorrelation() : base("MeanAutocorrelation", "") { }
-}
-
 [Item("LaggedAutocorrelation", ""), StorableType("E93A8BF9-69EF-4FCA-99B0-FF9157C63814")]
 public sealed class LaggedAutocorrelation : Symbol {
   public override int MinimumArity => 2;
@@ -312,6 +345,16 @@ public sealed class LaggedAutocorrelation : Symbol {
   private LaggedAutocorrelation(LaggedAutocorrelation original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new LaggedAutocorrelation(this, cloner); }
   public LaggedAutocorrelation() : base("LaggedAutocorrelation", "") { }
+}
+
+[Item("MeanAutocorrelation", ""), StorableType("589F8A85-1332-4B9D-B85E-F81CF2E46C58")]
+public sealed class MeanAutocorrelation : Symbol {
+  public override int MinimumArity => 1;
+  public override int MaximumArity => 1;
+  [StorableConstructor] private MeanAutocorrelation(StorableConstructorFlag _) : base(_) { }
+  private MeanAutocorrelation(MeanAutocorrelation original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new MeanAutocorrelation(this, cloner); }
+  public MeanAutocorrelation() : base("MeanAutocorrelation", "") { }
 }
 
 [Item("MeanSecondDerivateCentral", ""), StorableType("8C31A24F-83E2-4027-85F1-185AAF7C421D")]
@@ -324,24 +367,24 @@ public sealed class MeanSecondDerivateCentral : Symbol {
   public MeanSecondDerivateCentral() : base("MeanSecondDerivateCentral", "") { }
 }
 
-[Item("NumberPeaksOfSize", ""), StorableType("F57A6E86-F2A2-4884-BD29-9C74A694B3B0")]
-public sealed class NumberPeaksOfSize : Symbol {
+[Item("NumberContinuousWaveletTransformationPeaksOfSize", ""), StorableType("E89C54BF-8185-427E-BBF4-9AFC7CED6A20")]
+public sealed class NumberContinuousWaveletTransformationPeaksOfSize : Symbol {
   public override int MinimumArity => 2;
   public override int MaximumArity => 2;
-  [StorableConstructor] private NumberPeaksOfSize(StorableConstructorFlag _) : base(_) { }
-  private NumberPeaksOfSize(NumberPeaksOfSize original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new NumberPeaksOfSize(this, cloner); }
-  public NumberPeaksOfSize() : base("NumberPeaksOfSize", "") { }
+  [StorableConstructor] private NumberContinuousWaveletTransformationPeaksOfSize(StorableConstructorFlag _) : base(_) { }
+  private NumberContinuousWaveletTransformationPeaksOfSize(NumberContinuousWaveletTransformationPeaksOfSize original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new NumberContinuousWaveletTransformationPeaksOfSize(this, cloner); }
+  public NumberContinuousWaveletTransformationPeaksOfSize() : base("NumberContinuousWaveletTransformationPeaksOfSize", "") { }
 }
 
-[Item("LargeNumberOfPeaks", ""), StorableType("0E0EF4C6-0FA7-45C0-92C1-245392B33040")]
-public sealed class LargeNumberOfPeaks : Symbol {
-  public override int MinimumArity => 3;
-  public override int MaximumArity => 3;
-  [StorableConstructor] private LargeNumberOfPeaks(StorableConstructorFlag _) : base(_) { }
-  private LargeNumberOfPeaks(LargeNumberOfPeaks original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new LargeNumberOfPeaks(this, cloner); }
-  public LargeNumberOfPeaks() : base("LargeNumberOfPeaks", "") { }
+[Item("SpectralWelchDensity", ""), StorableType("CD012B74-1907-4023-A1C4-6D736C8E979A")]
+public sealed class SpectralWelchDensity : Symbol {
+  public override int MinimumArity => 2;
+  public override int MaximumArity => 2;
+  [StorableConstructor] private SpectralWelchDensity(StorableConstructorFlag _) : base(_) { }
+  private SpectralWelchDensity(SpectralWelchDensity original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new SpectralWelchDensity(this, cloner); }
+  public SpectralWelchDensity() : base("SpectralWelchDensity", "") { }
 }
 
 [Item("TimeReversalAsymmetryStatistic", ""), StorableType("F4CDC994-0931-46B5-ACE3-765010FF41C4")]

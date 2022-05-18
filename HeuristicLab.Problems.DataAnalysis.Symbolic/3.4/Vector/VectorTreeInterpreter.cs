@@ -40,7 +40,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
     Mean,
     Median,
     Sum,
-    //First,
+    First,
     //L1Norm,
     //L2Norm,
     NaN,
@@ -51,7 +51,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
       case Aggregation.Mean: return DoubleVector.Mean(vector);
       case Aggregation.Median: return DoubleVector.Median(vector);
       case Aggregation.Sum: return DoubleVector.Sum(vector);
-      //case Aggregation.First: return DoubleVector.First();
+      case Aggregation.First: return vector[0];
       //case Aggregation.L1Norm: return vector.L1Norm();
       //case Aggregation.L2Norm: return vector.L2Norm();
       case Aggregation.NaN: return double.NaN;
@@ -140,11 +140,25 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
 
   #region Aggregation Symbols
   private static Type[] AggregationSymbols = new[] {
-      typeof(Sum), typeof(Mean), typeof(Length),
-      typeof(StandardDeviation), typeof(Variance),
-      typeof(Skewness), typeof(Kurtosis),
-      typeof(Min), typeof(Max), typeof(Median), typeof(Quantile),
-      typeof(Covariance), typeof(EuclideanDistance)
+    typeof(Mean), typeof(Length),  typeof(Sum),
+    typeof(Median), typeof(Min), typeof(Max), typeof(Quantile),
+    typeof(StandardDeviation), typeof(MeanDeviation), typeof(InterquartileRange), typeof(Variance),
+    typeof(Skewness), typeof(Kurtosis),
+    typeof(EuclideanDistance), typeof(Covariance), typeof(PearsonCorrelationCoefficient), typeof(SpearmanRankCorrelationCoefficient),
+     #region TimeSeries Symbols
+    typeof(AbsoluteEnergy), typeof(AugmentedDickeyFullerTestStatistic), typeof(BinnedEntropy),
+    typeof(HasLargeStandardDeviation), typeof(HasVarianceLargerThanStdDev), typeof(IsSymmetricLooking), typeof(MassQuantile),
+    typeof(NumberDataPointsAboveMean), typeof(NumberDataPointsBelowMean),
+    
+    typeof(FirstIndexMax), typeof(FirstIndexMin), typeof(LastIndexMax), typeof(LastIndexMin),
+    typeof(LongestStrikeAboveMean), typeof(LongestStrikeAboveMedian), typeof(LongestStrikeBelowMean), typeof(LongestStrikeBelowMedian),
+    typeof(LongestStrikePositive), typeof(LongestStrikeNegative), typeof(LongestStrikeZero), 
+    typeof(MeanAbsoluteChange), typeof(MeanAbsoluteChangeQuantiles),
+    typeof(MeanAutocorrelation), typeof(LaggedAutocorrelation), typeof(MeanSecondDerivateCentral),
+    typeof(NumberPeaksOfSize), typeof(LargeNumberOfPeaks),
+    typeof(ArimaModelCoefficients), typeof(ContinuousWaveletTransformationCoefficients), typeof(FastFourierTransformationCoefficient),
+    typeof(TimeReversalAsymmetryStatistic), typeof(SpectralWelchDensity), typeof(NumberContinuousWaveletTransformationPeaksOfSize),
+    #endregion
     };
   #endregion
 
@@ -489,15 +503,15 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
       case OpCodes.Square: {
         var cur = Evaluate(dataset, ref row, state);
         cur = FunctionApply(cur,
-          s => Math.Pow(s, 2),
-          v => DoubleVector.Pow(v, 2.0));
+          s => s * s,
+          v => v * v);
         return cur;
       }
       case OpCodes.Cube: {
         var cur = Evaluate(dataset, ref row, state);
         cur = FunctionApply(cur,
-          s => Math.Pow(s, 3),
-          v => DoubleVector.Pow(v, 3.0));
+          s => s * s * s,
+          v => v * v * v);
         return cur;
       }
       case OpCodes.Power: {
@@ -554,150 +568,6 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           v => DoubleVector.Log(v));
         return cur;
       }
-      case VectorOpCodes.Sum: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => s,
-          v => DoubleVector.Sum(v));
-        return cur;
-      }
-      case VectorOpCodes.Mean: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => s,
-          v => DoubleVector.Mean(v));
-        return cur;
-      }
-      case VectorOpCodes.StandardDeviation: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => 0,
-          v => DoubleVector.StandardDeviation(v));
-        return cur;
-      }
-      case VectorOpCodes.Length: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => 1,
-          v => v.Length);
-        return cur;
-      }
-      case VectorOpCodes.Min: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => s,
-          v => DoubleVector.Min(v));
-        return cur;
-      }
-      case VectorOpCodes.Max: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => s,
-          v => DoubleVector.Max(v));
-        return cur;
-      }
-      case VectorOpCodes.Variance: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => 0,
-          v => DoubleVector.Variance(v));
-        return cur;
-      }
-      case VectorOpCodes.Skewness: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => 0,
-          v => DoubleVector.Skewness(v));
-        return cur;
-      }
-      case VectorOpCodes.Kurtosis: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => 0,
-          v => DoubleVector.Kurtosis(v));
-        return cur;
-      }
-      case VectorOpCodes.MeanDeviation: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => 0,
-          v => DoubleVector.MeanDeviation(v));
-        return cur;
-      }
-      case VectorOpCodes.InterquartileRange: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => 0,
-          v => DoubleVector.IQR(v));
-        return cur;
-      }
-      case VectorOpCodes.EuclideanDistance: {
-        var x1 = Evaluate(dataset, ref row, state);
-        var x2 = Evaluate(dataset, ref row, state);
-        var cur = AggregateMultipleApply(x1, x2,
-          (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs, 0.0),
-          (s1, s2) => Math.Sqrt(Math.Pow(s1 - s2, 2)),
-          (s1, v2) => DoubleVector.EuclideanDistance(s1, v2),
-          (v1, s2) => DoubleVector.EuclideanDistance(v1, s2),
-          (v1, v2) => DoubleVector.EuclideanDistance(v1, v2));
-        return cur;
-      }
-      case VectorOpCodes.Covariance: {
-        var x1 = Evaluate(dataset, ref row, state);
-        var x2 = Evaluate(dataset, ref row, state);
-        var cur = AggregateMultipleApply(x1, x2,
-          (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs, 0.0),
-          (s1, s2) => 0,
-          (s1, v2) => 0,
-          (v1, s2) => 0,
-          (v1, v2) => DoubleVector.Covariance(v1, v2));
-        return cur;
-      }
-      case VectorOpCodes.PearsonCorrelationCoefficient: {
-        var x1 = Evaluate(dataset, ref row, state);
-        var x2 = Evaluate(dataset, ref row, state);
-        var cur = AggregateMultipleApply(x1, x2,
-          (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs, 0.0),
-          (s1, s2) => 0,
-          (s1, v2) => 0,
-          (v1, s2) => 0,
-          (v1, v2) => DoubleVector.PearsonCorrelation(v1, v2));
-        return cur;
-      }
-      case VectorOpCodes.SpearmanRankCorrelationCoefficient: {
-        var x1 = Evaluate(dataset, ref row, state);
-        var x2 = Evaluate(dataset, ref row, state);
-        var cur = AggregateMultipleApply(x1, x2,
-          (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs, 0.0),
-          (s1, s2) => 0,
-          (s1, v2) => 0,
-          (v1, s2) => 0,
-          (v1, v2) => DoubleVector.SpearmanRankCorrelation(v1, v2));
-        return cur;
-      }
-      case VectorOpCodes.SubVector: {
-        var cur = Evaluate(dataset, ref row, state);
-        return FunctionApply(cur,
-          s => s,
-          v => {
-            var node = (WindowedSymbolTreeNode)currentInstr.dynamicNode;
-            var (startIdx, endIdx) = GetIndices(node, v);
-            return DoubleVector.SubVector(v, startIdx, endIdx, node.Symbol.AllowRoundTrip);
-          });
-      }
-      case VectorOpCodes.SubVectorSubtree: {
-        var cur = Evaluate(dataset, ref row, state);
-        var start = Evaluate(dataset, ref row, state);
-        var end = Evaluate(dataset, ref row, state);
-        return FunctionApply(cur,
-          s => s,
-          v => {
-            const bool allowRoundTrip = false;
-            var (startIdx, endIdx) = GetIndices(v.Length, start.Scalar, end.Scalar, allowRoundTrip);
-            return DoubleVector.SubVector(v, startIdx, endIdx, allowRoundTrip);
-          }
-        );
-      }
       case OpCodes.Variable: {
         if (row < 0 || row >= dataset.Rows) return EvaluationResult.Undefined;
         var variableTreeNode = (VariableTreeNode)currentInstr.dynamicNode;
@@ -730,13 +600,34 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
         var cur = new EvaluationResult(constTreeNode.Value);
         return cur;
       }
-
-      #region Time Series Symbols
+      
+      // Vector Statistics
+      case VectorOpCodes.Mean: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => s,
+          v => DoubleVector.Mean(v));
+        return cur;
+      }
       case VectorOpCodes.Median: {
         var cur = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
           s => s,
           v => DoubleVector.Median(v));
+        return cur;
+      }
+      case VectorOpCodes.Min: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => s,
+          v => DoubleVector.Min(v));
+        return cur;
+      }
+      case VectorOpCodes.Max: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => s,
+          v => DoubleVector.Max(v));
         return cur;
       }
       case VectorOpCodes.Quantile: {
@@ -747,7 +638,108 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           v => DoubleVector.Quantile(v, LimitTo(q.Scalar, 0.0, 1.0)));
         return cur;
       }
-
+      case VectorOpCodes.StandardDeviation: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => 0,
+          v => DoubleVector.StandardDeviation(v));
+        return cur;
+      }
+      case VectorOpCodes.MeanDeviation: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => 0,
+          v => DoubleVector.MeanDeviation(v));
+        return cur;
+      }
+      case VectorOpCodes.InterquartileRange: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => 0,
+          v => DoubleVector.IQR(v));
+        return cur;
+      }
+      case VectorOpCodes.Variance: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => 0,
+          v => DoubleVector.Variance(v));
+        return cur;
+      }
+      case VectorOpCodes.Skewness: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => 0,
+          v => DoubleVector.Skewness(v));
+        return cur;
+      }
+      case VectorOpCodes.Kurtosis: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => 0,
+          v => DoubleVector.Kurtosis(v));
+        return cur;
+      }
+      case VectorOpCodes.Length: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => 1,
+          v => v.Length);
+        return cur;
+      }
+      case VectorOpCodes.Sum: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => s,
+          v => DoubleVector.Sum(v));
+        return cur;
+      }
+      // Vector Comparisons
+      case VectorOpCodes.EuclideanDistance: {
+        var x1 = Evaluate(dataset, ref row, state);
+        var x2 = Evaluate(dataset, ref row, state);
+        var cur = AggregateMultipleApply(x1, x2,
+          (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs),
+          (s1, s2) => Math.Sqrt(Math.Pow(s1 - s2, 2)),
+          (s1, v2) => DoubleVector.EuclideanDistance(s1, v2),
+          (v1, s2) => DoubleVector.EuclideanDistance(v1, s2),
+          (v1, v2) => DoubleVector.EuclideanDistance(v1, v2));
+        return cur;
+      }
+      case VectorOpCodes.Covariance: {
+        var x1 = Evaluate(dataset, ref row, state);
+        var x2 = Evaluate(dataset, ref row, state);
+        var cur = AggregateMultipleApply(x1, x2,
+          (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs),
+          (s1, s2) => 0,
+          (s1, v2) => 0,
+          (v1, s2) => 0,
+          (v1, v2) => DoubleVector.Covariance(v1, v2));
+        return cur;
+      }
+      case VectorOpCodes.PearsonCorrelationCoefficient: {
+        var x1 = Evaluate(dataset, ref row, state);
+        var x2 = Evaluate(dataset, ref row, state);
+        var cur = AggregateMultipleApply(x1, x2,
+          (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs),
+          (s1, s2) => 0,
+          (s1, v2) => 0,
+          (v1, s2) => 0,
+          (v1, v2) => DoubleVector.PearsonCorrelation(v1, v2));
+        return cur;
+      }
+      case VectorOpCodes.SpearmanRankCorrelationCoefficient: {
+        var x1 = Evaluate(dataset, ref row, state);
+        var x2 = Evaluate(dataset, ref row, state);
+        var cur = AggregateMultipleApply(x1, x2,
+          (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs),
+          (s1, s2) => 0,
+          (s1, v2) => 0,
+          (v1, s2) => 0,
+          (v1, v2) => DoubleVector.SpearmanRankCorrelation(v1, v2));
+        return cur;
+      }
+      // Distribution Characteristics
       case VectorOpCodes.AbsoluteEnergy: {
         var cur = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
@@ -755,27 +747,27 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           v => DoubleVector.Sum(v ^ 2.0));
         return cur;
       }
-
+      case VectorOpCodes.AugmentedDickeyFullerTestStatistic: {
+        throw new NotImplementedException();
+      }
       case VectorOpCodes.BinnedEntropy: {
         var cur = Evaluate(dataset, ref row, state);
         var m = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
           s => 0,
           v => {
-            int bins = Math.Max((int)Math.Round(m.Scalar), 1);
+            int bins = LimitTo(m.Scalar, 1, v.Length);
             double minValue = DoubleVector.Min(v);
             double maxValue = DoubleVector.Max(v);
             double intervalWidth = (maxValue - minValue) / bins;
             int totalValues = v.Length;
             double sum = 0;
-            for (int i = 0; i < Math.Max(bins, v.Length); i++) {
-              double binMin = minValue * i;
-              double binMax = binMin + intervalWidth;
-              double countBin = DoubleVector.Sum(v > binMin && v < binMax);
+            for (int i = 0; i < bins; i++) {
+              double binMin = minValue * i, binMax = binMin + intervalWidth;
+              double countBin = DoubleVector.Sum(binMin <= v && v < binMax);
               double percBin = countBin / totalValues;
               sum += percBin * Math.Log(percBin);
             }
-
             return sum;
           });
         return cur;
@@ -787,7 +779,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           v => DoubleVector.StandardDeviation(v) > (DoubleVector.Max(v) - DoubleVector.Min(v)) / 2 ? 1.0 : 0.0);
         return cur;
       }
-      case VectorOpCodes.HasVarianceLargerThanStd: {
+      case VectorOpCodes.HasVarianceLargerThanStdDev: {
         var cur = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
           s => 0,
@@ -797,9 +789,12 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
       case VectorOpCodes.IsSymmetricLooking: {
         var cur = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
-          s => 0,
-          v => Math.Abs(DoubleVector.Mean(v) - DoubleVector.Median(v)) < (DoubleVector.Min(v) - DoubleVector.Max(v)) / 2 ? 1.0 : 0.0);
+          s => 1,
+          v => Math.Abs(DoubleVector.Mean(v) - DoubleVector.Median(v)) < (DoubleVector.Max(v) - DoubleVector.Min(v)) / 2 ? 1.0 : 0.0);
         return cur;
+      }
+      case VectorOpCodes.MassQuantile: {
+        throw new NotImplementedException();
       }
       case VectorOpCodes.NumberDataPointsAboveMean: {
         var cur = Evaluate(dataset, ref row, state);
@@ -808,16 +803,6 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           v => {
             double mean = DoubleVector.Mean(v);
             return DoubleVector.Sum(v > mean);
-          });
-        return cur;
-      }
-      case VectorOpCodes.NumberDataPointsAboveMedian: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => 0,
-          v => {
-            double median = DoubleVector.Median(v);
-            return DoubleVector.Sum(v > median);
           });
         return cur;
       }
@@ -831,43 +816,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           });
         return cur;
       }
-      case VectorOpCodes.NumberDataPointsBelowMedian: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => 0,
-          v => {
-            double median = DoubleVector.Median(v);
-            return DoubleVector.Sum(v < median);
-          });
-        return cur;
-      }
-
-      case VectorOpCodes.ArimaModelCoefficients: {
-        var cur = Evaluate(dataset, ref row, state);
-        var i = Evaluate(dataset, ref row, state);
-        var k = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => 0,
-          v => throw new NotImplementedException(""));
-        return cur;
-      }
-      case VectorOpCodes.ContinuousWaveletTransformationCoefficients: {
-        var cur = Evaluate(dataset, ref row, state);
-        var a = Evaluate(dataset, ref row, state);
-        var b = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => 0,
-          v => throw new NotImplementedException(""));
-        return cur;
-      }
-      case VectorOpCodes.FastFourierTransformationCoefficient: {
-        var cur = Evaluate(dataset, ref row, state);
-        var k = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => 0,
-          v => throw new NotImplementedException(""));
-        return cur;
-      }
+      // Time Series Dynamics
       case VectorOpCodes.FirstIndexMax: {
         var cur = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
@@ -927,22 +876,39 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
       case VectorOpCodes.LongestStrikePositive: {
         var cur = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
-          s => 0,
+          s => s > 0 ? 1 : 0,
           v => LongestStrikeAbove(v, 0));
         return cur;
       }
       case VectorOpCodes.LongestStrikeNegative: {
         var cur = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
-          s => 0,
+          s => s < 0 ? 1 : 0,
           v => LongestStrikeAbove(v, 0));
         return cur;
       }
       case VectorOpCodes.LongestStrikeZero: {
         var cur = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
-          s => 0,
+          s => s == 0.0 ? 1 : 0,
           v => LongestStrikeEqual(v, 0));
+        return cur;
+      }
+      case VectorOpCodes.NumberPeaksOfSize: {
+        var cur = Evaluate(dataset, ref row, state);
+        var l = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => 0,
+          v => CountNumberOfPeaks(v, LimitTo(l.Scalar, 1, v.Length)));
+        return cur;
+      }
+      case VectorOpCodes.LargeNumberOfPeaks: {
+        var cur = Evaluate(dataset, ref row, state);
+        var l = Evaluate(dataset, ref row, state);
+        var m = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => 0,
+          v => CountNumberOfPeaks(v, LimitTo(l.Scalar, 1, v.Length)) > m.Scalar ? 1.0 : 0.0);
         return cur;
       }
       case VectorOpCodes.MeanAbsoluteChange: {
@@ -952,9 +918,8 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           v => {
             double sum = 0.0;
             for (int i = 0; i < v.Length - 1; i++) {
-              sum += Math.Abs(v[i + 1] - v[i]);
+              sum += Math.Abs(v[i] - v[i + 1]);
             }
-
             return sum / v.Length;
           });
         return cur;
@@ -966,8 +931,8 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
         cur = AggregateApply(cur,
           s => 0,
           v => {
-            var lowerBound = DoubleVector.Quantile(v, ql.Scalar);
-            var upperBound = DoubleVector.Quantile(v, qu.Scalar);
+            var lowerBound = DoubleVector.Quantile(v, LimitTo(ql.Scalar, 0.0, 1.0));
+            var upperBound = DoubleVector.Quantile(v, LimitTo(qu.Scalar, 0.0, 1.0));
             var inBounds = v.Select(e => e > lowerBound && e < upperBound).ToList();
             double sum = 0.0;
             int count = 0;
@@ -979,23 +944,6 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
             }
 
             return sum / count;
-          });
-        return cur;
-      }
-      case VectorOpCodes.MeanAutocorrelation: {
-        var cur = Evaluate(dataset, ref row, state);
-        cur = AggregateApply(cur,
-          s => 0,
-          v => {
-            double sum = 0.0;
-            double mean = DoubleVector.Mean(v);
-            for (int l = 0; l < v.Length; l++) {
-              for (int i = 0; i < v.Length - l; i++) {
-                sum += (v[i] - mean) * (v[i + l] - mean);
-              }
-            }
-
-            return sum / (v.Length - 1) / DoubleVector.Variance(v);
           });
         return cur;
       }
@@ -1016,6 +964,23 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           });
         return cur;
       }
+      case VectorOpCodes.MeanAutocorrelation: {
+        var cur = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => 0,
+          v => {
+            double sum = 0.0;
+            double mean = DoubleVector.Mean(v);
+            for (int l = 0; l < v.Length; l++) {
+              for (int i = 0; i < v.Length - l; i++) {
+                sum += (v[i] - mean) * (v[i + l] - mean);
+              }
+            }
+
+            return sum / (v.Length - 1) / DoubleVector.Variance(v);
+          });
+        return cur;
+      }
       case VectorOpCodes.MeanSecondDerivateCentral: {
         var cur = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
@@ -1030,22 +995,38 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           });
         return cur;
       }
-      case VectorOpCodes.NumberPeaksOfSize: {
+
+      case VectorOpCodes.ArimaModelCoefficients: {
         var cur = Evaluate(dataset, ref row, state);
-        var l = Evaluate(dataset, ref row, state);
+        var i = Evaluate(dataset, ref row, state);
+        var k = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
           s => 0,
-          v => CountNumberOfPeaks(v, l.Scalar));
+          v => throw new NotImplementedException(""));
         return cur;
       }
-      case VectorOpCodes.LargeNumberOfPeaks: {
+      case VectorOpCodes.ContinuousWaveletTransformationCoefficients: {
         var cur = Evaluate(dataset, ref row, state);
-        var l = Evaluate(dataset, ref row, state);
-        var m = Evaluate(dataset, ref row, state);
+        var a = Evaluate(dataset, ref row, state);
+        var b = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
           s => 0,
-          v => CountNumberOfPeaks(v, l.Scalar) > m.Scalar ? 1.0 : 0.0);
+          v => throw new NotImplementedException(""));
         return cur;
+      }
+      case VectorOpCodes.FastFourierTransformationCoefficient: {
+        var cur = Evaluate(dataset, ref row, state);
+        var k = Evaluate(dataset, ref row, state);
+        cur = AggregateApply(cur,
+          s => 0,
+          v => throw new NotImplementedException(""));
+        return cur;
+      }
+      case VectorOpCodes.NumberContinuousWaveletTransformationPeaksOfSize: {
+        throw new NotImplementedException();
+      }
+      case VectorOpCodes.SpectralWelchDensity: {
+        throw new NotImplementedException();
       }
       case VectorOpCodes.TimeReversalAsymmetryStatistic: {
         var cur = Evaluate(dataset, ref row, state);
@@ -1062,8 +1043,31 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           });
         return cur;
       }
-      #endregion
-
+      // Vector Manipulations
+      case VectorOpCodes.SubVector: {
+        var cur = Evaluate(dataset, ref row, state);
+        return FunctionApply(cur,
+          s => s,
+          v => {
+            var node = (WindowedSymbolTreeNode)currentInstr.dynamicNode;
+            var (startIdx, endIdx) = GetIndices(node, v);
+            return DoubleVector.SubVector(v, startIdx, endIdx, node.Symbol.AllowRoundTrip);
+          });
+      }
+      case VectorOpCodes.SubVectorSubtree: {
+        var cur = Evaluate(dataset, ref row, state);
+        var start = Evaluate(dataset, ref row, state);
+        var end = Evaluate(dataset, ref row, state);
+        return FunctionApply(cur,
+          s => s,
+          v => {
+            const bool allowRoundTrip = false;
+            var (startIdx, endIdx) = GetIndices(v.Length, start.Scalar, end.Scalar, allowRoundTrip);
+            return DoubleVector.SubVector(v, startIdx, endIdx, allowRoundTrip);
+          }
+        );
+      }
+      
       default:
         throw new NotSupportedException($"Unsupported OpCode: {currentInstr.opCode}");
     }
@@ -1072,6 +1076,9 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
   #region Helpers
   private static double LimitTo(double s, double min, double max) {
     return Math.Min(Math.Max(s, min), max);
+  }
+  private static int LimitTo(double s, int min, int max) {
+    return Math.Min(Math.Max((int)Math.Round(s), min), max);
   }
   
   private static (int StartIdx, int EndIdx) GetIndices(WindowedSymbolTreeNode node, IVector v) {
@@ -1116,7 +1123,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
   private static int LongestStrikeEqual(DoubleVector v, double value, double epsilon = double.Epsilon) {
     int longestStrike = 0, currentStrike = 0;
     for (int i = 0; i < v.Length; i++) {
-      if (v[i].IsAlmost(epsilon)) {
+      if (v[i].IsAlmost(value, epsilon)) {
         currentStrike++;
         longestStrike = Math.Max(longestStrike, currentStrike);
       } else
@@ -1124,15 +1131,45 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
     }
     return longestStrike;
   }
-  private static int CountNumberOfPeaks(DoubleVector v, double heightDifference) {
+  private static int CountNumberOfPeaks(DoubleVector v, int neighborDistance) {
+    // bool IsPeak(int idx) {
+    //   double leftMinimum = v[idx], rightMinimum = v[idx];
+    //   for (int j = 1; j < neighborDistance; j++) {
+    //     int leftIdx = LimitTo(idx - j, 0, v.Length), rightIdx = LimitTo(idx + j, 0, v.Length);
+    //     if (v[leftIdx] <= leftMinimum)
+    //       leftMinimum = v[leftIdx];
+    //     else return false;
+    //     if (v[rightIdx] <= rightMinimum)
+    //       rightMinimum = v[leftIdx];
+    //     else return false;
+    //   }
+    //   return true;
+    // }
+    bool IsPeak(int idx) {
+      for (int j = 1; j < neighborDistance; j++) {
+        int leftIdx = LimitTo(idx - j, 0, v.Length), rightIdx = LimitTo(idx + j, 0, v.Length);
+        if (v[leftIdx] > v[idx]) return false;
+        if (v[rightIdx] > v[idx]) return false;
+      }
+      return true;
+    }
+    
     int count = 0;
     for (int i = 0; i < v.Length; i++) {
-      bool largerThanPrev = i == 0 || v[i] > v[i - 1] + heightDifference;
-      bool largerThanNext = i == v.Length - 1 || v[i] > v[i + 1] + heightDifference;
-      if (largerThanPrev && largerThanNext)
+      if (IsPeak(i)) {
         count++;
+      }
     }
+
     return count;
+    
+    // for (int i = 0; i < v.Length; i++) {
+    //   bool largerThanPrev = i == 0 || v[i] > v[i - 1] + heightDifference;
+    //   bool largerThanNext = i == v.Length - 1 || v[i] > v[i + 1] + heightDifference;
+    //   if (largerThanPrev && largerThanNext)
+    //     count++;
+    // }
+    // return count;
   }
   #endregion
 }

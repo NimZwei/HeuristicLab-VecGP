@@ -53,6 +53,7 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
 
   private const string VectorManipulationSymbolsName = "Vector Manipulation Symbols";
   private const string VectorSubVectorSymbolsName = "Vector SubVector Symbols";
+  private const string MiscSymbolsName = "Misc Symbols";
 
   private const string RealValuedSymbolsName = "Real Valued Symbols";
 
@@ -90,20 +91,21 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
 
     var constant = new Constant { Enabled = false };
     var number = new Number { MinValue = -20, MaxValue = 20 };
-    var numberZeroToOne = new Number { Name = "Number [0-1]", MinValue = 0, MaxValue = 1, Enabled = false };
+    var numberZeroToOne = new Number { Name = "Number [0-1]", MinValue = 0, MaxValue = 1, InitialFrequency = 0.01, Enabled = false };
+    var numberPositive = new Number { Name = "Number [1..]", MinValue = 1, MaxValue = +20, InitialFrequency = 0.01, Enabled = false };
     var variable = new Variable();
     var binFactorVariable = new BinaryFactorVariable();
     var factorVariable = new FactorVariable();
 
     var mean = new Mean();
     var median = new Median() { Enabled = false };
-    var stdev = new StandardDeviation();
-    var sum = new Sum();
+    var stdDev = new StandardDeviation();
+    var sum = new Sum() { Enabled = false };
     var length = new Length() { Enabled = false };
     var min = new Min() { Enabled = false };
     var max = new Max() { Enabled = false };
     var quantile = new Quantile() { Enabled = false };
-    var mdev = new MeanDeviation() { Enabled = false };
+    var meanDev = new MeanDeviation() { Enabled = false };
     var iqr = new InterquartileRange() { Enabled = false };
     var variance = new Variance() { Enabled = false };
     var skewness = new Skewness() { Enabled = false };
@@ -138,14 +140,14 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
 
     #region TimeSeries Symbols
     var absoluteEnergy = new AbsoluteEnergy() { Enabled = false };
+    var augmentedDickeyFullerTestStatistic = new AugmentedDickeyFullerTestStatistic() { Enabled = false };
     var binnedEntropy = new BinnedEntropy() { Enabled = false };
     var hasLargeStandardDeviation = new HasLargeStandardDeviation() { Enabled = false };
-    var hasVarianceLargerThanStd = new HasVarianceLargerThanStd() { Enabled = false };
+    var hasVarianceLargerThanStd = new HasVarianceLargerThanStdDev() { Enabled = false };
     var isSymmetricLooking = new IsSymmetricLooking() { Enabled = false };
+    var massQuantile = new MassQuantile() { Enabled = false };
     var numberDataPointsAboveMean = new NumberDataPointsAboveMean() { Enabled = false };
-    var numberDataPointsAboveMedian = new NumberDataPointsAboveMedian() { Enabled = false };
     var numberDataPointsBelowMean = new NumberDataPointsBelowMean() { Enabled = false };
-    var numberDataPointsBelowMedian = new NumberDataPointsBelowMedian() { Enabled = false };
 
     var arimaModelCoefficients = new ArimaModelCoefficients() { Enabled = false };
     var continuousWaveletTransformationCoefficients = new ContinuousWaveletTransformationCoefficients() { Enabled = false };
@@ -169,6 +171,8 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     var numberPeaksOfSize = new NumberPeaksOfSize() { Enabled = false };
     var largeNumberOfPeaks = new LargeNumberOfPeaks() { Enabled = false };
     var timeReversalAsymmetryStatistic = new TimeReversalAsymmetryStatistic() { Enabled = false };
+    var spectralWelchDensity = new SpectralWelchDensity() { Enabled = false };
+    var numberContinuousWaveletTransformationPeaksOfSize = new NumberContinuousWaveletTransformationPeaksOfSize() { Enabled = false };
     #endregion
     #endregion
 
@@ -182,19 +186,19 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     var trigonometricSymbols = new GroupSymbol(TrigonometricFunctionsName, new List<ISymbol>() { sin, cos, tan });
     var exponentialAndLogarithmicSymbols = new GroupSymbol(ExponentialFunctionsName, new List<ISymbol> { exp, log });
     var powerSymbols = new GroupSymbol(PowerFunctionsName, new List<ISymbol> { square, sqrt, cube, cubeRoot, power, root });
-    var terminalSymbols = new GroupSymbol(TerminalsName, new List<ISymbol> { constant, number, numberZeroToOne, variable, binFactorVariable, factorVariable });
-    var statisticsSymbols = new GroupSymbol(VectorStatisticsName, new List<ISymbol> { mean, median, stdev, sum, length, min, max, quantile, mdev, iqr, variance, skewness, kurtosis });
+    var terminalSymbols = new GroupSymbol(TerminalsName, new List<ISymbol> { constant, number, /*numberZeroToOne, numberPositive,*/ variable, binFactorVariable, factorVariable });
+    var statisticsSymbols = new GroupSymbol(VectorStatisticsName, new List<ISymbol> { mean, median, stdDev, sum, length, min, max, quantile, meanDev, iqr, variance, skewness, kurtosis });
     var comparisonSymbols = new GroupSymbol(VectorComparisonsName, new List<ISymbol> { euclideanDistance, covariance, pearsonCorrelation, spearmanRankCorrelation });
     var distributionCharacteristicsSymbols = new GroupSymbol(VectorDistributionCharacteristicsName, new List<ISymbol> {
-      absoluteEnergy, binnedEntropy, hasLargeStandardDeviation, hasVarianceLargerThanStd, isSymmetricLooking,
-      numberDataPointsAboveMean, numberDataPointsAboveMedian, numberDataPointsBelowMean, numberDataPointsBelowMedian
-    });
+      absoluteEnergy, augmentedDickeyFullerTestStatistic, binnedEntropy, 
+      hasLargeStandardDeviation, hasVarianceLargerThanStd, isSymmetricLooking, massQuantile,
+      numberDataPointsAboveMean, numberDataPointsBelowMean, });
     var timeSeriesDynamicsSymbols = new GroupSymbol(VectorTimeSeriesDynamicsName, new List<ISymbol> {
       arimaModelCoefficients, continuousWaveletTransformationCoefficients, fastFourierTransformationCoefficient,
       firstIndexMax, firstIndexMin, lastIndexMax, lastIndexMin,
       longestStrikeAboveMean, longestStrikeAboveMedian, longestStrikeBelowMean, longestStrikeBelowMedian, longestStrikePositive, longestStrikePositive, longestStrikeNegative, longestStrikeZero,
       meanAbsoluteChange, meanAbsoluteChangeQuantiles, meanAutocorrelation, laggedAutocorrelation, meanSecondDerivateCentral, meanSecondDerivateCentral,
-      numberPeaksOfSize, largeNumberOfPeaks, timeReversalAsymmetryStatistic
+      numberPeaksOfSize, largeNumberOfPeaks, timeReversalAsymmetryStatistic, spectralWelchDensity, numberContinuousWaveletTransformationPeaksOfSize
     });
     var aggregationSymbols = new GroupSymbol(VectorAggregationName, new List<ISymbol> { statisticsSymbols, comparisonSymbols, distributionCharacteristicsSymbols, timeSeriesDynamicsSymbols });
     var scalarSymbols = new GroupSymbol(ScalarSymbolsName, new List<ISymbol>() { arithmeticSymbols, trigonometricSymbols, exponentialAndLogarithmicSymbols, powerSymbols, terminalSymbols, aggregationSymbols });
@@ -207,7 +211,9 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     var vectorSymbols = new GroupSymbol(VectorSymbolsName, new List<ISymbol>() { vectorarithmeticSymbols, vectortrigonometricSymbols, vectorexponentialAndLogarithmicSymbols, vectorpowerSymbols, vectorterminalSymbols });
 
     var vectorSubVectorSymbols = new GroupSymbol(VectorSubVectorSymbolsName, new List<ISymbol>() { subvectorLocal, subvectorSubtree });
+    // TODO: resample & rolling manipulation
     var vectorManipulationSymbols = new GroupSymbol(VectorManipulationSymbolsName, new List<ISymbol>() { vectorSubVectorSymbols });
+    var miscSymbols = new GroupSymbol(MiscSymbolsName, new List<ISymbol>() { numberZeroToOne, numberPositive });
 
     //var realValuedSymbols = new GroupSymbol(RealValuedSymbolsName, new List<ISymbol> { scalarSymbols, vectorSymbols });
     #endregion
@@ -216,6 +222,7 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     AddSymbol(scalarSymbols);
     AddSymbol(vectorSymbols);
     AddSymbol(vectorManipulationSymbols);
+    AddSymbol(miscSymbols);
 
     #region subtree count configuration
     SetSubtreeCount(arithmeticSymbols, 2, 2);
@@ -235,11 +242,13 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     SetSubtreeCount(comparisonSymbols, 2, 2);
     #region TimeSeries symbols
     foreach (var sy in new Symbol[] {
-      absoluteEnergy, hasLargeStandardDeviation, hasVarianceLargerThanStd, isSymmetricLooking,
-      numberDataPointsAboveMean, numberDataPointsAboveMedian, numberDataPointsBelowMean, numberDataPointsBelowMedian
+      absoluteEnergy, augmentedDickeyFullerTestStatistic,
+      hasLargeStandardDeviation, hasVarianceLargerThanStd, isSymmetricLooking,
+      numberDataPointsAboveMean, numberDataPointsBelowMean, 
     }) SetSubtreeCount(sy, 1, 1);
-    foreach (var sy in new Symbol[] { binnedEntropy })
-      SetSubtreeCount(sy, 2, 2);
+    foreach (var sy in new Symbol[] {
+      binnedEntropy, massQuantile,
+    }) SetSubtreeCount(sy, 2, 2);
 
     foreach (var sy in new Symbol[] {
       firstIndexMax, firstIndexMin, lastIndexMax, lastIndexMin,
@@ -248,11 +257,12 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
       meanAbsoluteChange, meanAutocorrelation, meanSecondDerivateCentral
     }) SetSubtreeCount(sy, 1, 1);
     foreach (var sy in new Symbol[] {
-      fastFourierTransformationCoefficient, laggedAutocorrelation, numberPeaksOfSize, timeReversalAsymmetryStatistic
+      numberPeaksOfSize, laggedAutocorrelation, 
+      fastFourierTransformationCoefficient, numberContinuousWaveletTransformationPeaksOfSize, spectralWelchDensity, timeReversalAsymmetryStatistic
     }) SetSubtreeCount(sy, 2, 2);
     foreach (var sy in new Symbol[] {
-      arimaModelCoefficients, continuousWaveletTransformationCoefficients,
-      meanAbsoluteChangeQuantiles, largeNumberOfPeaks
+      meanAbsoluteChangeQuantiles, largeNumberOfPeaks,
+      arimaModelCoefficients, continuousWaveletTransformationCoefficients
     }) SetSubtreeCount(sy, 3, 3);
     #endregion
 
@@ -284,16 +294,38 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     AddAllowedChildSymbol(root, number, 1);
     AddAllowedChildSymbol(aggregationSymbols, vectorSymbols, 0);
     AddAllowedChildSymbol(statisticsSymbols, vectorSubVectorSymbols, 0);
-    AddAllowedChildSymbol(quantile, numberZeroToOne, 1);
     AddAllowedChildSymbol(comparisonSymbols, vectorSymbols, 1);
+    
     AddAllowedChildSymbol(distributionCharacteristicsSymbols, vectorSymbols, 0);
     AddAllowedChildSymbol(distributionCharacteristicsSymbols, vectorSubVectorSymbols, 0);
-    AddAllowedChildSymbol(distributionCharacteristicsSymbols, numberZeroToOne, 1);
-    AddAllowedChildSymbol(timeSeriesDynamicsSymbols, vectorSymbols, 0);
-    AddAllowedChildSymbol(timeSeriesDynamicsSymbols, vectorSubVectorSymbols, 0);
-    AddAllowedChildSymbol(timeSeriesDynamicsSymbols, numberZeroToOne, 1);
-    AddAllowedChildSymbol(timeSeriesDynamicsSymbols, numberZeroToOne, 2);
-
+    
+    // numeric parameter
+    foreach (var sy in new Symbol[] {
+      continuousWaveletTransformationCoefficients
+    }) {
+      for (int i = 1; i < GetMaximumSubtreeCount(sy); i++) 
+        AddAllowedChildSymbol(sy, number/*scalarSymbols*/, i);
+    } 
+    // positive numeric parameters
+    foreach (var sy in new Symbol[] {
+      binnedEntropy, numberPeaksOfSize, largeNumberOfPeaks, laggedAutocorrelation,
+      fastFourierTransformationCoefficient, numberContinuousWaveletTransformationPeaksOfSize,
+      spectralWelchDensity, timeReversalAsymmetryStatistic,
+      arimaModelCoefficients
+    }) {
+      for (int i = 1; i < GetMaximumSubtreeCount(sy); i++) 
+        AddAllowedChildSymbol(sy, numberPositive/*scalarSymbols*/, i);
+      AutoEnable(numberPositive, sy);
+    }
+    // zero-to-one numeric parameters
+    foreach (var sy in new Symbol[] {
+      quantile, massQuantile, meanAbsoluteChangeQuantiles
+    }) {
+      for (int i = 1; i < GetMaximumSubtreeCount(sy); i++) 
+        AddAllowedChildSymbol(sy, numberZeroToOne/*scalarSymbols*/, i);
+      AutoEnable(numberZeroToOne, sy);
+    }
+   
     AddAllowedChildSymbol(vectorarithmeticSymbols, vectorSymbols);
     AddAllowedChildSymbol(vectorarithmeticSymbols, scalarSymbols);
     AddAllowedChildSymbol(vectortrigonometricSymbols, vectorSymbols);
@@ -310,27 +342,25 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     AddAllowedChildSymbol(subvectorSubtree, scalarSymbols, 2);
     #endregion
     
-    #region auto-enable
-    void AutoEnable(ISymbol symbol, params ISymbol[] dependentSymbols) {
-      foreach (var dependentSymbol in dependentSymbols) {
-        if (dependentSymbol is GroupSymbol groupSymbol) {
-          foreach (var innerSymbol in groupSymbol.Symbols) AutoEnable(symbol, innerSymbol);
-        } else {
-          dependentSymbol.Changed += (sender, args) => {
-            if (dependentSymbol.Enabled) symbol.Enabled = true;
-          };
-        }
+    #region Helpers
+    void AutoEnable(ISymbol symbol, ISymbol dependentSymbol) {
+      if (dependentSymbol is GroupSymbol groupSymbol) {
+        foreach (var innerSymbol in groupSymbol.Symbols) 
+          AutoEnable(symbol, innerSymbol);
+      } else {
+        dependentSymbol.Changed += (sender, args) => {
+          if (dependentSymbol.Enabled) symbol.Enabled = true;
+        };
       }
     }
-    AutoEnable(numberZeroToOne, quantile, distributionCharacteristicsSymbols, timeSeriesDynamicsSymbols);
-
     #endregion
 
     #region default enabled/disabled
     var disabledByDefault = new[] {
         TrigonometricFunctionsName, ExponentialFunctionsName, PowerFunctionsName,
         VectorTrigonometricFunctionsName, VectorExponentialFunctionsName, VectorPowerFunctionsName,
-        VectorManipulationSymbolsName
+        VectorComparisonsName, VectorDistributionCharacteristicsName, VectorTimeSeriesDynamicsName,
+        VectorManipulationSymbolsName, MiscSymbolsName
       };
     foreach (var grp in Symbols.Where(sym => disabledByDefault.Contains(sym.Name)))
       grp.Enabled = false;

@@ -67,6 +67,36 @@ public sealed class Median : Symbol {
   public Median() : base("Median", "Symbol that represents the median function.") { }
 }
 
+[Item("Min", "Symbol that represents the min function."), StorableType("AB40A794-51A7-45ED-AF83-90D61BE4158D")]
+public sealed class Min : Symbol {
+  public override int MinimumArity => 1;
+  public override int MaximumArity => 1;
+  [StorableConstructor] private Min(StorableConstructorFlag _) : base(_) { }
+  private Min(Min original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new Min(this, cloner); }
+  public Min() : base("Min", "Symbol that represents the min function.") { }
+}
+
+[Item("Min", "Symbol that represents the max function."), StorableType("1FFBD7DA-C474-4E99-B24F-AAD6B8B3EB35")]
+public sealed class Max : Symbol {
+  public override int MinimumArity => 1;
+  public override int MaximumArity => 1;
+  [StorableConstructor] private Max(StorableConstructorFlag _) : base(_) { }
+  private Max(Max original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new Max(this, cloner); }
+  public Max() : base("Max", "Symbol that represents the max function.") { }
+}
+
+[Item("Quantile", "Symbol that represents the quantile of an empiric distribution."), StorableType("3BEA06D1-7603-473C-9E7D-4DB56AEFEF17")]
+public sealed class Quantile : Symbol {
+  public override int MinimumArity => 2;
+  public override int MaximumArity => 2;
+  [StorableConstructor] private Quantile(StorableConstructorFlag _) : base(_) { }
+  private Quantile(Quantile original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new Quantile(this, cloner); }
+  public Quantile() : base("Quantile", "Symbol that represents the quantile of an empiric distribution.") { }
+}
+
 [Item("StandardDeviation", "Symbol that represents the standard deviation function."), StorableType("615033EC-6A76-4DE7-B55F-BB228D6A8166")]
 public sealed class StandardDeviation : Symbol {
   public override int MinimumArity => 1;
@@ -126,34 +156,4 @@ public sealed class Kurtosis : Symbol {
   private Kurtosis(Kurtosis original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new Kurtosis(this, cloner); }
   public Kurtosis() : base("Kurtosis", "Symbol that represents the kurtosis function.") { }
-}
-
-[Item("Min", "Symbol that represents the min function."), StorableType("AB40A794-51A7-45ED-AF83-90D61BE4158D")]
-public sealed class Min : Symbol {
-  public override int MinimumArity => 1;
-  public override int MaximumArity => 1;
-  [StorableConstructor] private Min(StorableConstructorFlag _) : base(_) { }
-  private Min(Min original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new Min(this, cloner); }
-  public Min() : base("Min", "Symbol that represents the min function.") { }
-}
-
-[Item("Min", "Symbol that represents the max function."), StorableType("1FFBD7DA-C474-4E99-B24F-AAD6B8B3EB35")]
-public sealed class Max : Symbol {
-  public override int MinimumArity => 1;
-  public override int MaximumArity => 1;
-  [StorableConstructor] private Max(StorableConstructorFlag _) : base(_) { }
-  private Max(Max original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new Max(this, cloner); }
-  public Max() : base("Max", "Symbol that represents the max function.") { }
-}
-
-[Item("Quantile", "Symbol that represents the quantile of an empiric distribution."), StorableType("3BEA06D1-7603-473C-9E7D-4DB56AEFEF17")]
-public sealed class Quantile : Symbol {
-  public override int MinimumArity => 2;
-  public override int MaximumArity => 2;
-  [StorableConstructor] private Quantile(StorableConstructorFlag _) : base(_) { }
-  private Quantile(Quantile original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new Quantile(this, cloner); }
-  public Quantile() : base("Quantile", "Symbol that represents the quantile of an empiric distribution.") { }
 }

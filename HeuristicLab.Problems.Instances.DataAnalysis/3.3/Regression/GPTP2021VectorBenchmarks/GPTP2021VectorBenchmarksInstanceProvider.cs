@@ -100,19 +100,6 @@ public class GPTP2021VectorBenchmarksInstanceProvider : GPTP2021VectorBaseBenchm
       new GPTP2021VectorBenchmarkDataDescriptor("test_C_01B", "test_C_01", new[] { "x1", "x2", "v1", "v2", "v3", "v4", "v5", "v6" }, "y2"),
       new GPTP2021VectorBenchmarkDataDescriptor("test_C_01C", "test_C_01", new[] { "x1", "x2", "v1", "v2", "v3", "v4", "v5", "v6" }, "y3"),
       new GPTP2021VectorBenchmarkDataDescriptor("test_C_01D", "test_C_01", new[] { "x1", "x2", "v1", "v2", "v3", "v4", "v5", "v6" }, "y4"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("test_I_01_Nguyen_7", new[] { "x" }),
-      //new GPTP2021VectorBenchmarkDataDescriptor("test_I_02_Keijzer_6", new[] { "x", "y", "z" }, "f"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("test_I_03_Vladislavleva_14", new[] { "x1", "x2", "x3", "x4", "x5" }),
-      //new GPTP2021VectorBenchmarkDataDescriptor("test_I_04_Pagie_1", new[] { "x", "y" }, "f"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("test_I_05_Poly_10", new[] { "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10" }),
-      //new GPTP2021VectorBenchmarkDataDescriptor("test_I_06_Friedman_2", new[] { "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10" }),
-      //new GPTP2021VectorBenchmarkDataDescriptor("test_M_01_Nguyen_7_M1", new[] { "x" }),
-      //new GPTP2021VectorBenchmarkDataDescriptor("test_M_02_Keijzer_6_M1", new[] { "x", "y", "z" }, "f"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("test_M_03_Vladislavleva_14_M1", new[] { "x1", "x2", "x3", "x4", "x5" }),
-      //new GPTP2021VectorBenchmarkDataDescriptor("test_M_03_Vladislavleva_14_M2", new[] { "x1", "x2", "x3", "x4", "x5" }),
-      //new GPTP2021VectorBenchmarkDataDescriptor("test_M_04_Pagie_1_M1", new[] { "x", "y" }, "f"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("test_M_05_Poly_10_M1", new[] { "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10" }),
-      //new GPTP2021VectorBenchmarkDataDescriptor("test_M_06_Friedman_2_M1", new[] { "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10" }),
     };
   }
 }
@@ -149,19 +136,6 @@ public class GPTP2021UnrolledVectorBenchmarksInstanceProvider : GPTP2021VectorBa
       new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_C_01B", "unrolled_test_C_01", Flatten(S("x1"), S("x2"), U("v1"), U("v2"), U("v3"), U("v4"), U("v5"), U("v6")), "y2"),
       new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_C_01C", "unrolled_test_C_01", Flatten(S("x1"), S("x2"), U("v1"), U("v2"), U("v3"), U("v4"), U("v5"), U("v6")), "y3"),
       new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_C_01D", "unrolled_test_C_01", Flatten(S("x1"), S("x2"), U("v1"), U("v2"), U("v3"), U("v4"), U("v5"), U("v6")), "y4"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_I_01_Nguyen_7", Flatten(S("x"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_I_02_Keijzer_6", Flatten(S("x"), S("y"), S("z")), "f"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_I_03_Vladislavleva_14", Flatten(S("x1"), S("x2"), S("x3"), S("x4"), S("x5"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_I_04_Pagie_1", Flatten(S("x"), S("y")), "f"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_I_05_Poly_10", Flatten(S("x1"), S("x2"), S("x3"), S("x4"), S("x5"), S("x6"), S("x7"), S("x8"), S("x9"), S("x10"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_I_06_Friedman_2", Flatten(S("x1"), S("x2"), S("x3"), S("x4"), S("x5"), S("x6"), S("x7"), S("x8"), S("x9"), S("x10"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_M_01_Nguyen_7_M1", Flatten(U("x"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_M_02_Keijzer_6_M1", Flatten(U("x"), U("y"), U("z")), "f"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_M_03_Vladislavleva_14_M1", Flatten(U("x1"), U("x2"), U("x3"), U("x4"), U("x5"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_M_03_Vladislavleva_14_M2", Flatten(U("x1"), U("x2"), U("x3"), U("x4"), U("x5"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_M_04_Pagie_1_M1", Flatten(U("x"), U("y")), "f"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_M_05_Poly_10_M1", Flatten(U("x1"), U("x2"), U("x3"), U("x4"), U("x5"), U("x6"), U("x7"), U("x8"), U("x9"), U("x10"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("unrolled_test_M_06_Friedman_2_M1", Flatten(U("x1"), U("x2"), U("x3"), U("x4"), U("x5"), U("x6"), U("x7"), U("x8"), U("x9"), U("x10"))),
     };
   }
 }
@@ -198,19 +172,6 @@ public class GPTP2021PreAggregatedVectorBenchmarksInstanceProvider : GPTP2021Vec
       new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_C_01B", "pre_aggregated_test_C_01", Flatten(S("x1"), S("x2"), A("v1"), A("v2"), A("v3"), A("v4"), A("v5"), A("v6")), "y2"),
       new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_C_01C", "pre_aggregated_test_C_01", Flatten(S("x1"), S("x2"), A("v1"), A("v2"), A("v3"), A("v4"), A("v5"), A("v6")), "y3"),
       new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_C_01D", "pre_aggregated_test_C_01", Flatten(S("x1"), S("x2"), A("v1"), A("v2"), A("v3"), A("v4"), A("v5"), A("v6")), "y4"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_I_01_Nguyen_7", Flatten(S("x"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_I_02_Keijzer_6", Flatten(S("x"), S("y"), S("z")), "f"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_I_03_Vladislavleva_14", Flatten(S("x1"), S("x2"), S("x3"), S("x4"), S("x5"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_I_04_Pagie_1", Flatten(S("x"), S("y")), "f"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_I_05_Poly_10", Flatten(S("x1"), S("x2"), S("x3"), S("x4"), S("x5"), S("x6"), S("x7"), S("x8"), S("x9"), S("x10"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_I_06_Friedman_2", Flatten(S("x1"), S("x2"), S("x3"), S("x4"), S("x5"), S("x6"), S("x7"), S("x8"), S("x9"), S("x10"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_M_01_Nguyen_7_M1", Flatten(A("x"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_M_02_Keijzer_6_M1", Flatten(A("x"), A("y"), A("z")), "f"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_M_03_Vladislavleva_14_M1", Flatten(A("x1"), A("x2"), A("x3"), A("x4"), A("x5"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_M_03_Vladislavleva_14_M2", Flatten(A("x1"), A("x2"), A("x3"), A("x4"), A("x5"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_M_04_Pagie_1_M1", Flatten(A("x"), A("y")), "f"),
-      //new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_M_05_Poly_10_M1", Flatten(A("x1"), A("x2"), A("x3"), A("x4"), A("x5"), A("x6"), A("x7"), A("x8"), A("x9"), A("x10"))),
-      //new GPTP2021VectorBenchmarkDataDescriptor("pre_aggregated_test_M_06_Friedman_2_M1", Flatten(A("x1"), A("x2"), A("x3"), A("x4"), A("x5"), A("x6"), A("x7"), A("x8"), A("x9"), A("x10"))),
     };
   }
 }

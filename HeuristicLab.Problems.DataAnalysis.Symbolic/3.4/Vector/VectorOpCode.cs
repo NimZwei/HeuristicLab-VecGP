@@ -27,21 +27,24 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Vector;
 
 public enum VectorOpCode : byte {
   #region General Vector Sybols
-  Length = 100,
-  Sum = 101,
   Mean = 102,
-  StandardDeviation = 103,
-  Variance = 104,
-  Skewness = 105,
-  Kurtosis = 106,
-  MeanDeviation = 107,
-  InterquartileRange = 108,
-
+  
+  Median = 112,
   Min = 110,
   Max = 111,
-  Median = 112,
   Quantile = 113,
+  
+  StandardDeviation = 103,
+  MeanDeviation = 107,
+  InterquartileRange = 108,
+  Variance = 104,
 
+  Skewness = 105,
+  Kurtosis = 106,
+  
+  Length = 100,
+  Sum = 101,
+  
   EuclideanDistance = 120,
   Covariance = 121,
   PearsonCorrelationCoefficient = 122,
@@ -53,15 +56,15 @@ public enum VectorOpCode : byte {
 
   #region Time Series Symbols
   AbsoluteEnergy = 200,
+  AugmentedDickeyFullerTestStatistic = 206,
   BinnedEntropy = 201,
   HasLargeStandardDeviation = 202,
-  HasVarianceLargerThanStd = 203,
+  HasVarianceLargerThanStdDev = 203,
   IsSymmetricLooking = 204,
+  MassQuantile = 208,
   NumberDataPointsAboveMean = 205,
-  NumberDataPointsAboveMedian = 206,
   NumberDataPointsBelowMean = 207,
-  NumberDataPointsBelowMedian = 208,
-
+  
   FirstIndexMax = 220,
   FirstIndexMin = 221,
   LastIndexMax = 222,
@@ -84,7 +87,9 @@ public enum VectorOpCode : byte {
   ArimaModelCoefficients = 240,
   ContinuousWaveletTransformationCoefficients = 241,
   FastFourierTransformationCoefficient = 242,
-  TimeReversalAsymmetryStatistic = 243
+  TimeReversalAsymmetryStatistic = 243,
+  NumberContinuousWaveletTransformationPeaksOfSize = 244,
+  SpectralWelchDensity = 245
   #endregion
 }
 
@@ -111,15 +116,15 @@ public static class VectorOpCodes {
   public const byte Quantile = (byte)VectorOpCode.Quantile;
 
   public const byte AbsoluteEnergy = (byte)VectorOpCode.AbsoluteEnergy;
+  public const byte AugmentedDickeyFullerTestStatistic = (byte)VectorOpCode.AugmentedDickeyFullerTestStatistic;
   public const byte BinnedEntropy = (byte)VectorOpCode.BinnedEntropy;
   public const byte HasLargeStandardDeviation = (byte)VectorOpCode.HasLargeStandardDeviation;
-  public const byte HasVarianceLargerThanStd = (byte)VectorOpCode.HasVarianceLargerThanStd;
+  public const byte HasVarianceLargerThanStdDev = (byte)VectorOpCode.HasVarianceLargerThanStdDev;
   public const byte IsSymmetricLooking = (byte)VectorOpCode.IsSymmetricLooking;
+  public const byte MassQuantile = (byte)VectorOpCode.MassQuantile;
   public const byte NumberDataPointsAboveMean = (byte)VectorOpCode.NumberDataPointsAboveMean;
-  public const byte NumberDataPointsAboveMedian = (byte)VectorOpCode.NumberDataPointsAboveMedian;
   public const byte NumberDataPointsBelowMean = (byte)VectorOpCode.NumberDataPointsBelowMean;
-  public const byte NumberDataPointsBelowMedian = (byte)VectorOpCode.NumberDataPointsBelowMedian;
-
+  
   public const byte ArimaModelCoefficients = (byte)VectorOpCode.ArimaModelCoefficients;
   public const byte ContinuousWaveletTransformationCoefficients = (byte)VectorOpCode.ContinuousWaveletTransformationCoefficients;
   public const byte FastFourierTransformationCoefficient = (byte)VectorOpCode.FastFourierTransformationCoefficient;
@@ -142,6 +147,8 @@ public static class VectorOpCodes {
   public const byte NumberPeaksOfSize = (byte)VectorOpCode.NumberPeaksOfSize;
   public const byte LargeNumberOfPeaks = (byte)VectorOpCode.LargeNumberOfPeaks;
   public const byte TimeReversalAsymmetryStatistic = (byte)VectorOpCode.TimeReversalAsymmetryStatistic;
+  public const byte NumberContinuousWaveletTransformationPeaksOfSize = (byte)VectorOpCode.NumberContinuousWaveletTransformationPeaksOfSize;
+  public const byte SpectralWelchDensity = (byte)VectorOpCode.SpectralWelchDensity;
   #endregion
 
   private static Dictionary<Type, VectorOpCode> symbolToOpcode = new Dictionary<Type, VectorOpCode>() {
@@ -168,14 +175,14 @@ public static class VectorOpCodes {
     { typeof(Quantile), VectorOpCode.Quantile },
 
     { typeof(AbsoluteEnergy), VectorOpCode.AbsoluteEnergy },
+    { typeof(AugmentedDickeyFullerTestStatistic), VectorOpCode.AugmentedDickeyFullerTestStatistic },
     { typeof(BinnedEntropy), VectorOpCode.BinnedEntropy },
     { typeof(HasLargeStandardDeviation), VectorOpCode.HasLargeStandardDeviation },
-    { typeof(HasVarianceLargerThanStd), VectorOpCode.HasVarianceLargerThanStd },
+    { typeof(HasVarianceLargerThanStdDev), VectorOpCode.HasVarianceLargerThanStdDev },
     { typeof(IsSymmetricLooking), VectorOpCode.IsSymmetricLooking },
+    { typeof(MassQuantile), VectorOpCode.MassQuantile },
     { typeof(NumberDataPointsAboveMean), VectorOpCode.NumberDataPointsAboveMean },
-    { typeof(NumberDataPointsAboveMedian), VectorOpCode.NumberDataPointsAboveMedian },
     { typeof(NumberDataPointsBelowMean), VectorOpCode.NumberDataPointsBelowMean },
-    { typeof(NumberDataPointsBelowMedian), VectorOpCode.NumberDataPointsBelowMedian },
 
     { typeof(ArimaModelCoefficients), VectorOpCode.ArimaModelCoefficients },
     { typeof(ContinuousWaveletTransformationCoefficients), VectorOpCode.ContinuousWaveletTransformationCoefficients },
@@ -199,6 +206,8 @@ public static class VectorOpCodes {
     { typeof(NumberPeaksOfSize), VectorOpCode.NumberPeaksOfSize },
     { typeof(LargeNumberOfPeaks), VectorOpCode.LargeNumberOfPeaks },
     { typeof(TimeReversalAsymmetryStatistic), VectorOpCode.TimeReversalAsymmetryStatistic },
+    { typeof(NumberContinuousWaveletTransformationPeaksOfSize), VectorOpCode.NumberContinuousWaveletTransformationPeaksOfSize },
+    { typeof(SpectralWelchDensity), VectorOpCode.SpectralWelchDensity },
     #endregion
   };
 
