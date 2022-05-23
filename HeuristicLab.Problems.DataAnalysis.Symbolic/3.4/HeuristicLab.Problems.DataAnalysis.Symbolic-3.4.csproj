@@ -316,11 +316,12 @@
     <Compile Include="TreeMatching\SymbolicExpressionTreePhenotypicSimilarityCalculator.cs" />
     <Compile Include="Vector\DoubleVector.cs" />
     <Compile Include="Vector\Grammars\TypeCoherentVectorExpressionGrammar.cs" />
+    <Compile Include="Vector\Symbols\Aggregations\Similarities.cs" />
+    <Compile Include="Vector\Symbols\Aggregations\SimpleStatistics.cs" />
+    <Compile Include="Vector\Symbols\Aggregations\TimeSeriesFeatureExtraction.cs" />
+    <Compile Include="Vector\Symbols\VectorManipulations\Resampling.cs" />
+    <Compile Include="Vector\Symbols\VectorManipulations\SubVector.cs" />
     <Compile Include="Vector\VectorTreeInterpreter.cs" />
-    <Compile Include="Vector\Symbols\Aggregations.cs" />
-    <Compile Include="Vector\Symbols\Comparisons.cs" />
-    <Compile Include="Vector\Symbols\SubVector.cs" />
-    <Compile Include="Vector\Symbols\TimeSeriesAggregations.cs" />
     <Compile Include="Vector\Symbols\WindowedSymbol.cs" />
     <Compile Include="Vector\Symbols\WindowedSymbolTreeNode.cs" />
     <Compile Include="Vector\VectorOpCode.cs" />
@@ -443,7 +444,6 @@
       <Name>HeuristicLab.Selection-3.3</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

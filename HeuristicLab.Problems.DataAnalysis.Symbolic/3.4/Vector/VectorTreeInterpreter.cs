@@ -142,20 +142,20 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
   private static Type[] AggregationSymbols = new[] {
     typeof(Mean), typeof(Length),  typeof(Sum),
     typeof(Median), typeof(Min), typeof(Max), typeof(Quantile),
-    typeof(StandardDeviation), typeof(MeanDeviation), typeof(InterquartileRange), typeof(Variance),
+    typeof(StandardDeviation), typeof(MeanAbsoluteDeviation), typeof(InterquartileRange), typeof(Variance),
     typeof(Skewness), typeof(Kurtosis),
     typeof(EuclideanDistance), typeof(Covariance), typeof(PearsonCorrelationCoefficient), typeof(SpearmanRankCorrelationCoefficient),
      #region TimeSeries Symbols
     typeof(AbsoluteEnergy), typeof(AugmentedDickeyFullerTestStatistic), typeof(BinnedEntropy),
-    typeof(HasLargeStandardDeviation), typeof(HasVarianceLargerThanStdDev), typeof(IsSymmetricLooking), typeof(MassQuantile),
+    typeof(LargeStandardDeviation), typeof(HasVarianceLargerThanStandardDeviation), typeof(IsSymmetricLooking), typeof(IndexMassQuantile),
     typeof(NumberDataPointsAboveMean), typeof(NumberDataPointsBelowMean),
     
-    typeof(FirstIndexMax), typeof(FirstIndexMin), typeof(LastIndexMax), typeof(LastIndexMin),
+    typeof(FirstLocationOfMaximum), typeof(FirstLocationOfMinimum), typeof(LastLocationOfMaximum), typeof(LastLocationOfMinimum),
     typeof(LongestStrikeAboveMean), typeof(LongestStrikeAboveMedian), typeof(LongestStrikeBelowMean), typeof(LongestStrikeBelowMedian),
     typeof(LongestStrikePositive), typeof(LongestStrikeNegative), typeof(LongestStrikeZero), 
     typeof(MeanAbsoluteChange), typeof(MeanAbsoluteChangeQuantiles),
-    typeof(MeanAutocorrelation), typeof(LaggedAutocorrelation), typeof(MeanSecondDerivateCentral),
-    typeof(NumberPeaksOfSize), typeof(LargeNumberOfPeaks),
+    typeof(MeanAutocorrelation), typeof(LaggedAutocorrelation), typeof(MeanSecondDerivativeCentral),
+    typeof(NumberPeaks), typeof(LargeNumberOfPeaks),
     typeof(ArimaModelCoefficients), typeof(ContinuousWaveletTransformationCoefficients), typeof(FastFourierTransformationCoefficient),
     typeof(TimeReversalAsymmetryStatistic), typeof(SpectralWelchDensity), typeof(NumberContinuousWaveletTransformationPeaksOfSize),
     #endregion
@@ -649,7 +649,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
         var cur = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
           s => 0,
-          v => DoubleVector.MeanDeviation(v));
+          v => DoubleVector.MeanAbsoluteDeviation(v));
         return cur;
       }
       case VectorOpCodes.InterquartileRange: {
@@ -981,7 +981,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           });
         return cur;
       }
-      case VectorOpCodes.MeanSecondDerivateCentral: {
+      case VectorOpCodes.MeanSecondDerivativeCentral: {
         var cur = Evaluate(dataset, ref row, state);
         cur = AggregateApply(cur,
           s => 0,

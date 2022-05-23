@@ -19,12 +19,33 @@
  */
 #endregion
 
+using System;
 using HeuristicLab.Common;
 using HeuristicLab.Core;
 using HeuristicLab.Encodings.SymbolicExpressionTreeEncoding;
 using HEAL.Attic;
 
 namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Vector;
+
+[Item("InterquartileRange", "Symbol that represents the interquartile range function."), StorableType("EF7BF05A-CCFE-47ED-9ECC-8E7A93D664AD")]
+public sealed class InterquartileRange : Symbol {
+  public override int MinimumArity => 1;
+  public override int MaximumArity => 1;
+  [StorableConstructor] private InterquartileRange(StorableConstructorFlag _) : base(_) { }
+  private InterquartileRange(InterquartileRange original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new InterquartileRange(this, cloner); }
+  public InterquartileRange() : base("InterquartileRange", "Symbol that represents the interquartile range function.") { }
+}
+
+[Item("Kurtosis", "Symbol that represents the kurtosis function."), StorableType("FDE431E4-C20F-4203-9054-6175A8B734A7")]
+public sealed class Kurtosis : Symbol {
+  public override int MinimumArity => 1;
+  public override int MaximumArity => 1;
+  [StorableConstructor] private Kurtosis(StorableConstructorFlag _) : base(_) { }
+  private Kurtosis(Kurtosis original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new Kurtosis(this, cloner); }
+  public Kurtosis() : base("Kurtosis", "Symbol that represents the kurtosis function.") { }
+}
 
 [Item("Length", "Symbol that represents the length function."), StorableType("E3634514-DAC3-48FF-93D2-F3AD0E559C07")]
 public sealed class Length : Symbol {
@@ -36,15 +57,14 @@ public sealed class Length : Symbol {
   public Length() : base("Length", "Symbol that represents the length function.") { }
 }
 
-[Item("Sum", "Symbol that represents the sum function."), StorableType("C6C245BF-C44A-4207-A268-55641483F27F")]
-public sealed class Sum : Symbol {
+[Item("Max", "Symbol that represents the max function."), StorableType("1FFBD7DA-C474-4E99-B24F-AAD6B8B3EB35")]
+public sealed class Max : Symbol {
   public override int MinimumArity => 1;
   public override int MaximumArity => 1;
-  [StorableConstructor]
-  private Sum(StorableConstructorFlag _) : base(_) { }
-  private Sum(Sum original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new Sum(this, cloner); }
-  public Sum() : base("Sum", "Symbol that represents the sum function.") { }
+  [StorableConstructor] private Max(StorableConstructorFlag _) : base(_) { }
+  private Max(Max original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new Max(this, cloner); }
+  public Max() : base("Max", "Symbol that represents the max function.") { }
 }
 
 [Item("Mean", "Symbol that represents the mean function."), StorableType("2AE24E16-849E-4D54-A35B-7FE64BEF8ECB")]
@@ -55,6 +75,17 @@ public sealed class Mean : Symbol {
   private Mean(Mean original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new Mean(this, cloner); }
   public Mean() : base("Mean", "Symbol that represents the mean function.") { }
+}
+
+[Obsolete]
+[Item("MeanAbsoluteDeviation", "Symbol that represents the mean absolute deviation function."), StorableType("C50BC0F4-D83E-4625-94A6-D65E89213822")]
+public sealed class MeanAbsoluteDeviation : Symbol {
+  public override int MinimumArity => 1;
+  public override int MaximumArity => 1;
+  [StorableConstructor] private MeanAbsoluteDeviation(StorableConstructorFlag _) : base(_) { }
+  private MeanAbsoluteDeviation(MeanAbsoluteDeviation original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new MeanAbsoluteDeviation(this, cloner); }
+  public MeanAbsoluteDeviation() : base("MeanAbsoluteDeviation", "Symbol that represents the mean absolute deviation function.") { }
 }
 
 [Item("Median", "Symbol that represents the median function."), StorableType("62460F36-459D-4B78-AB91-DCF9B8D6A414")]
@@ -77,16 +108,6 @@ public sealed class Min : Symbol {
   public Min() : base("Min", "Symbol that represents the min function.") { }
 }
 
-[Item("Min", "Symbol that represents the max function."), StorableType("1FFBD7DA-C474-4E99-B24F-AAD6B8B3EB35")]
-public sealed class Max : Symbol {
-  public override int MinimumArity => 1;
-  public override int MaximumArity => 1;
-  [StorableConstructor] private Max(StorableConstructorFlag _) : base(_) { }
-  private Max(Max original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new Max(this, cloner); }
-  public Max() : base("Max", "Symbol that represents the max function.") { }
-}
-
 [Item("Quantile", "Symbol that represents the quantile of an empiric distribution."), StorableType("3BEA06D1-7603-473C-9E7D-4DB56AEFEF17")]
 public sealed class Quantile : Symbol {
   public override int MinimumArity => 2;
@@ -95,47 +116,6 @@ public sealed class Quantile : Symbol {
   private Quantile(Quantile original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new Quantile(this, cloner); }
   public Quantile() : base("Quantile", "Symbol that represents the quantile of an empiric distribution.") { }
-}
-
-[Item("StandardDeviation", "Symbol that represents the standard deviation function."), StorableType("615033EC-6A76-4DE7-B55F-BB228D6A8166")]
-public sealed class StandardDeviation : Symbol {
-  public override int MinimumArity => 1;
-  public override int MaximumArity => 1;
-  [StorableConstructor] private StandardDeviation(StorableConstructorFlag _) : base(_) { }
-  private StandardDeviation(StandardDeviation original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new StandardDeviation(this, cloner); }
-  public StandardDeviation() : base("StandardDeviation", "Symbol that represents the standard deviation function.") { }
-}
-
-[Item("MeanDeviation", "Symbol that represents the mean deviation function."), StorableType("C50BC0F4-D83E-4625-94A6-D65E89213822")]
-public sealed class MeanDeviation : Symbol {
-  public override int MinimumArity => 1;
-  public override int MaximumArity => 1;
-  [StorableConstructor] private MeanDeviation(StorableConstructorFlag _) : base(_) { }
-  private MeanDeviation(MeanDeviation original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new MeanDeviation(this, cloner); }
-  public MeanDeviation() : base("MeanDeviation", "Symbol that represents the mean deviation function.") { }
-}
-
-[Item("InterquartileRange", "Symbol that represents the interquartile range function."), StorableType("EF7BF05A-CCFE-47ED-9ECC-8E7A93D664AD")]
-public sealed class InterquartileRange : Symbol {
-  public override int MinimumArity => 1;
-  public override int MaximumArity => 1;
-  [StorableConstructor] private InterquartileRange(StorableConstructorFlag _) : base(_) { }
-  private InterquartileRange(InterquartileRange original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new InterquartileRange(this, cloner); }
-  public InterquartileRange() : base("InterquartileRange", "Symbol that represents the interquartile range function.") { }
-}
-
-[Item("Variance", "Symbol that represents the variance function."), StorableType("E9371D4B-104A-43CF-82F9-4F3B41B2FC3D")]
-public sealed class Variance : Symbol {
-  public override int MinimumArity => 1;
-  public override int MaximumArity => 1;
-
-  [StorableConstructor] private Variance(StorableConstructorFlag _) : base(_) { }
-  private Variance(Variance original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new Variance(this, cloner); }
-  public Variance() : base("Variance", "Symbol that represents the variance function.") { }
 }
 
 [Item("Skewness", "Symbol that represents the skewness function."), StorableType("7C645DC6-6904-4E9C-A9DE-474F66AD6563")]
@@ -148,12 +128,34 @@ public sealed class Skewness : Symbol {
   public Skewness() : base("Skewness", "Symbol that represents the skewness function.") { }
 }
 
-[Item("Kurtosis", "Symbol that represents the kurtosis function."), StorableType("FDE431E4-C20F-4203-9054-6175A8B734A7")]
-public sealed class Kurtosis : Symbol {
+[Item("StandardDeviation", "Symbol that represents the standard deviation function."), StorableType("615033EC-6A76-4DE7-B55F-BB228D6A8166")]
+public sealed class StandardDeviation : Symbol {
   public override int MinimumArity => 1;
   public override int MaximumArity => 1;
-  [StorableConstructor] private Kurtosis(StorableConstructorFlag _) : base(_) { }
-  private Kurtosis(Kurtosis original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new Kurtosis(this, cloner); }
-  public Kurtosis() : base("Kurtosis", "Symbol that represents the kurtosis function.") { }
+  [StorableConstructor] private StandardDeviation(StorableConstructorFlag _) : base(_) { }
+  private StandardDeviation(StandardDeviation original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new StandardDeviation(this, cloner); }
+  public StandardDeviation() : base("StandardDeviation", "Symbol that represents the standard deviation function.") { }
 }
+
+[Item("Sum", "Symbol that represents the sum function."), StorableType("C6C245BF-C44A-4207-A268-55641483F27F")]
+public sealed class Sum : Symbol {
+  public override int MinimumArity => 1;
+  public override int MaximumArity => 1;
+  [StorableConstructor]
+  private Sum(StorableConstructorFlag _) : base(_) { }
+  private Sum(Sum original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new Sum(this, cloner); }
+  public Sum() : base("Sum", "Symbol that represents the sum function.") { }
+}
+
+[Item("Variance", "Symbol that represents the variance function."), StorableType("E9371D4B-104A-43CF-82F9-4F3B41B2FC3D")]
+public sealed class Variance : Symbol {
+  public override int MinimumArity => 1;
+  public override int MaximumArity => 1;
+  [StorableConstructor] private Variance(StorableConstructorFlag _) : base(_) { }
+  private Variance(Variance original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new Variance(this, cloner); }
+  public Variance() : base("Variance", "Symbol that represents the variance function.") { }
+}
+

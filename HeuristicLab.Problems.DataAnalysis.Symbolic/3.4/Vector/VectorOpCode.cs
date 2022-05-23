@@ -143,7 +143,7 @@ public static class VectorOpCodes {
   public const byte MeanAbsoluteChangeQuantiles = (byte)VectorOpCode.MeanAbsoluteChangeQuantiles;
   public const byte MeanAutocorrelation = (byte)VectorOpCode.MeanAutocorrelation;
   public const byte LaggedAutocorrelation = (byte)VectorOpCode.LaggedAutocorrelation;
-  public const byte MeanSecondDerivateCentral = (byte)VectorOpCode.MeanSecondDerivateCentral;
+  public const byte MeanSecondDerivativeCentral = (byte)VectorOpCode.MeanSecondDerivateCentral;
   public const byte NumberPeaksOfSize = (byte)VectorOpCode.NumberPeaksOfSize;
   public const byte LargeNumberOfPeaks = (byte)VectorOpCode.LargeNumberOfPeaks;
   public const byte TimeReversalAsymmetryStatistic = (byte)VectorOpCode.TimeReversalAsymmetryStatistic;
@@ -161,7 +161,7 @@ public static class VectorOpCodes {
     { typeof(Variance), VectorOpCode.Variance },
     { typeof(Skewness), VectorOpCode.Skewness },
     { typeof(Kurtosis), VectorOpCode.Kurtosis },
-    { typeof(MeanDeviation), VectorOpCode.MeanDeviation },
+    { typeof(MeanAbsoluteDeviation), VectorOpCode.MeanDeviation },
     { typeof(InterquartileRange), VectorOpCode.InterquartileRange },
     { typeof(EuclideanDistance), VectorOpCode.EuclideanDistance },
     { typeof(Covariance), VectorOpCode.Covariance },
@@ -177,20 +177,20 @@ public static class VectorOpCodes {
     { typeof(AbsoluteEnergy), VectorOpCode.AbsoluteEnergy },
     { typeof(AugmentedDickeyFullerTestStatistic), VectorOpCode.AugmentedDickeyFullerTestStatistic },
     { typeof(BinnedEntropy), VectorOpCode.BinnedEntropy },
-    { typeof(HasLargeStandardDeviation), VectorOpCode.HasLargeStandardDeviation },
-    { typeof(HasVarianceLargerThanStdDev), VectorOpCode.HasVarianceLargerThanStdDev },
+    { typeof(LargeStandardDeviation), VectorOpCode.HasLargeStandardDeviation },
+    { typeof(HasVarianceLargerThanStandardDeviation), VectorOpCode.HasVarianceLargerThanStdDev },
     { typeof(IsSymmetricLooking), VectorOpCode.IsSymmetricLooking },
-    { typeof(MassQuantile), VectorOpCode.MassQuantile },
+    { typeof(IndexMassQuantile), VectorOpCode.MassQuantile },
     { typeof(NumberDataPointsAboveMean), VectorOpCode.NumberDataPointsAboveMean },
     { typeof(NumberDataPointsBelowMean), VectorOpCode.NumberDataPointsBelowMean },
 
     { typeof(ArimaModelCoefficients), VectorOpCode.ArimaModelCoefficients },
     { typeof(ContinuousWaveletTransformationCoefficients), VectorOpCode.ContinuousWaveletTransformationCoefficients },
     { typeof(FastFourierTransformationCoefficient), VectorOpCode.FastFourierTransformationCoefficient },
-    { typeof(FirstIndexMax), VectorOpCode.FirstIndexMax },
-    { typeof(FirstIndexMin), VectorOpCode.FirstIndexMin },
-    { typeof(LastIndexMax), VectorOpCode.LastIndexMax },
-    { typeof(LastIndexMin), VectorOpCode.LastIndexMin },
+    { typeof(FirstLocationOfMaximum), VectorOpCode.FirstIndexMax },
+    { typeof(FirstLocationOfMinimum), VectorOpCode.FirstIndexMin },
+    { typeof(LastLocationOfMaximum), VectorOpCode.LastIndexMax },
+    { typeof(LastLocationOfMinimum), VectorOpCode.LastIndexMin },
     { typeof(LongestStrikeAboveMean), VectorOpCode.LongestStrikeAboveMean },
     { typeof(LongestStrikeAboveMedian), VectorOpCode.LongestStrikeAboveMedian },
     { typeof(LongestStrikeBelowMean), VectorOpCode.LongestStrikeBelowMean },
@@ -202,8 +202,8 @@ public static class VectorOpCodes {
     { typeof(MeanAbsoluteChangeQuantiles), VectorOpCode.MeanAbsoluteChangeQuantiles },
     { typeof(MeanAutocorrelation), VectorOpCode.MeanAutocorrelation },
     { typeof(LaggedAutocorrelation), VectorOpCode.LaggedAutocorrelation },
-    { typeof(MeanSecondDerivateCentral), VectorOpCode.MeanSecondDerivateCentral },
-    { typeof(NumberPeaksOfSize), VectorOpCode.NumberPeaksOfSize },
+    { typeof(MeanSecondDerivativeCentral), VectorOpCode.MeanSecondDerivateCentral },
+    { typeof(NumberPeaks), VectorOpCode.NumberPeaksOfSize },
     { typeof(LargeNumberOfPeaks), VectorOpCode.LargeNumberOfPeaks },
     { typeof(TimeReversalAsymmetryStatistic), VectorOpCode.TimeReversalAsymmetryStatistic },
     { typeof(NumberContinuousWaveletTransformationPeaksOfSize), VectorOpCode.NumberContinuousWaveletTransformationPeaksOfSize },

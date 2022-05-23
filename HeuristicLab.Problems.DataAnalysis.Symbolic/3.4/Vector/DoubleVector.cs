@@ -289,7 +289,7 @@ internal class DoubleVector : Vector<double> {
   public static double StandardDeviation(DoubleVector v) {
     return Math.Sqrt(alglib.samplevariance(v.values, v.Length));
   }
-  public static double MeanDeviation(DoubleVector v) {
+  public static double MeanAbsoluteDeviation(DoubleVector v) {
     alglib.sampleadev(v.values, v.Length, out double meanDev);
     return meanDev;
   }
