@@ -194,6 +194,7 @@
     <Compile Include="SymbolicExpressionTreeNode.cs" />
     <Compile Include="Symbols\Argument.cs" />
     <Compile Include="Symbols\ArgumentTreeNode.cs" />
+    <Compile Include="Symbols\Composite.cs" />
     <Compile Include="Symbols\GroupSymbol.cs" />
     <Compile Include="Symbols\SimpleSymbol.cs" />
     <Compile Include="Symbols\StartSymbol.cs" />

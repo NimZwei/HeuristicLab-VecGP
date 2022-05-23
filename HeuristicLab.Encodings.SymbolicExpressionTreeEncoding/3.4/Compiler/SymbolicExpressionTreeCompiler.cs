@@ -60,20 +60,29 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
 
     private static IEnumerable<Instruction> Compile(ISymbolicExpressionTreeNode branch, Func<ISymbolicExpressionTreeNode, byte> opCodeMapper, IEnumerable<Func<Instruction, Instruction>> postInstructionCompiledHooks) {
       foreach (var node in branch.IterateNodesPrefix()) {
-        Instruction instr = new Instruction();
         int subtreesCount = node.SubtreeCount;
         if (subtreesCount > ushort.MaxValue) throw new ArgumentException("Number of subtrees is too big (> 65.535)");
-        instr.nArguments = (ushort)subtreesCount;
-        instr.opCode = opCodeMapper(node);
-        if (node.Symbol is Argument) {
-          var argNode = (ArgumentTreeNode)node;
-          instr.data = (ushort)argNode.Symbol.ArgumentIndex;
+        
+        if (node is CompositeTreeNode compositeNode) {
+          var expanded = compositeNode.CreateExpandedTreeNode();
+          foreach (var instructions in Compile(expanded, opCodeMapper, postInstructionCompiledHooks))
+            yield return instructions;
+        } else {
+          Instruction instr = new Instruction {
+            nArguments = (ushort)subtreesCount,
+            opCode = opCodeMapper(node),
+            dynamicNode = node
+          };
+          if (node.Symbol is Argument) {
+            var argNode = (ArgumentTreeNode)node;
+            instr.data = (ushort)argNode.Symbol.ArgumentIndex;
+          }
+          foreach (var hook in postInstructionCompiledHooks) {
+            instr = hook(instr);
+          }
+
+          yield return instr;
         }
-        instr.dynamicNode = node;
-        foreach (var hook in postInstructionCompiledHooks) {
-          instr = hook(instr);
-        }
-        yield return instr;
       }
     }
   }
