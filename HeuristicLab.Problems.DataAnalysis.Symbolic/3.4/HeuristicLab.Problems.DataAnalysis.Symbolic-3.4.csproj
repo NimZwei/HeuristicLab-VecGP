@@ -319,8 +319,13 @@
     <Compile Include="Vector\Symbols\Aggregations\Similarities.cs" />
     <Compile Include="Vector\Symbols\Aggregations\SimpleStatistics.cs" />
     <Compile Include="Vector\Symbols\Aggregations\TimeSeriesFeatureExtraction.cs" />
-    <Compile Include="Vector\Symbols\VectorManipulations\Resampling.cs" />
-    <Compile Include="Vector\Symbols\VectorManipulations\SubVector.cs" />
+    <Compile Include="Vector\Symbols\Misc.cs" />
+    <Compile Include="Vector\Symbols\VectorLengthManipulations\Diff.cs" />
+    <Compile Include="Vector\Symbols\VectorLengthManipulations\Resample.cs" />
+    <Compile Include="Vector\Symbols\VectorLengthManipulations\SubVector.cs" />
+    <Compile Include="Vector\Symbols\VectorManipulations\Reorder.cs" />
+    <Compile Include="Vector\Symbols\VectorManipulations\Roll.cs" />
+    <Compile Include="Vector\Symbols\VectorManipulations\Scaling.cs" />
     <Compile Include="Vector\VectorTreeInterpreter.cs" />
     <Compile Include="Vector\Symbols\WindowedSymbol.cs" />
     <Compile Include="Vector\Symbols\WindowedSymbolTreeNode.cs" />

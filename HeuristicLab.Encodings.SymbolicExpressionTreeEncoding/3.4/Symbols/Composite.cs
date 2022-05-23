@@ -32,6 +32,7 @@ public abstract class CompositeSymbol : Symbol {
   [StorableConstructor] protected CompositeSymbol(StorableConstructorFlag _) : base(_) { }
   protected CompositeSymbol(CompositeSymbol original, Cloner cloner) : base(original, cloner) { }
   protected CompositeSymbol(string name) : base(name, "") { }
+  protected CompositeSymbol(string name, string description) : base(name, description) { }
 
   public override ISymbolicExpressionTreeNode CreateTreeNode() {
     return new CompositeTreeNode(this);

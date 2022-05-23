@@ -65,6 +65,9 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
       InitialFrequency = 0.0;
     }
 
+    public GroupSymbol(string name, params ISymbol[] symbols)
+      : this(name, symbols.AsEnumerable()) { }
+
     public override IEnumerable<ISymbol> Flatten() {
       return base.Flatten().Union(symbols.SelectMany(s => s.Flatten()));
     }

@@ -37,29 +37,17 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Vector;
 // Combiner functions are implemented as fixed-parameter functions returning a single value instead of returning a feature vector.
 
 
-// public static class AbsoluteEnergy3 {
-//   public static CompositeSymbol CreateAbsoluteEnergyCompositeSymbol() {
-//     var input = CompositeSymbol.ArgumentPlaceholder;
-//     var square = new Square().CreateTreeNode();
-//     var sum = new Sum().CreateTreeNode();
-//     sum.AddSubtree(square);
-//     square.AddSubtree(input);
-//     
-//     return new CompositeSymbol("AbsoluteEnergy", sum);
-//   }
-// }
-
-[Item("AbsoluteEnergy2", ""), StorableType("39FD9A52-3B28-4CA0-897B-02A979EA5EBF")]
-public sealed class AbsoluteEnergy2 : CompositeSymbol {
+[Item("AbsoluteEnergy", ""), StorableType("39FD9A52-3B28-4CA0-897B-02A979EA5EBF")]
+public sealed class AbsoluteEnergy : CompositeSymbol {
   public override int MinimumArity => 1;
   public override int MaximumArity => 1;
-  [StorableConstructor] private AbsoluteEnergy2(StorableConstructorFlag _) : base(_) { }
-  private AbsoluteEnergy2(AbsoluteEnergy2 original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new AbsoluteEnergy2(this, cloner); }
-  public AbsoluteEnergy2() : base("AbsoluteEnergy2") { }
+  [StorableConstructor] private AbsoluteEnergy(StorableConstructorFlag _) : base(_) { }
+  private AbsoluteEnergy(AbsoluteEnergy original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new AbsoluteEnergy(this, cloner); }
+  public AbsoluteEnergy() : base("AbsoluteEnergy") { }
 
   public override ISymbolicExpressionTreeNode Expand(ISymbolicExpressionTreeNode[] arguments) {
-    if (arguments.Length != 1) throw new InvalidOperationException("Expected only 1 argument.");
+    if (arguments.Length != 1) throw new InvalidOperationException($"Expected 1 argument but were {arguments.Length}.");
     var input = arguments[0];
     var square = new Square().CreateTreeNode();
     var sum = new Sum().CreateTreeNode();
@@ -69,30 +57,22 @@ public sealed class AbsoluteEnergy2 : CompositeSymbol {
   }
 }
 
-
-
-
-
-
-
-[Item("AbsoluteEnergy", ""), StorableType("4871F884-D23A-4F21-9458-5DB0D7DE2FBD")]
-public sealed class AbsoluteEnergy : Symbol {
-  public override int MinimumArity => 1;
-  public override int MaximumArity => 1;
-  [StorableConstructor] private AbsoluteEnergy(StorableConstructorFlag _) : base(_) { }
-  private AbsoluteEnergy(AbsoluteEnergy original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new AbsoluteEnergy(this, cloner); }
-  public AbsoluteEnergy() : base("AbsoluteEnergy", "") { }
-}
-
 [Item("AbsoluteMaximum", ""), StorableType("C0EC838D-1EFC-4B5F-934C-5EA2C0B4C410")]
-public sealed class AbsoluteMaximum : Symbol {
+public sealed class AbsoluteMaximum : CompositeSymbol {
   public override int MinimumArity => 1;
   public override int MaximumArity => 1;
   [StorableConstructor] private AbsoluteMaximum(StorableConstructorFlag _) : base(_) { }
   private AbsoluteMaximum(AbsoluteMaximum original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new AbsoluteMaximum(this, cloner); }
-  public AbsoluteMaximum() : base("AbsoluteMaximum", "") { }
+  public AbsoluteMaximum() : base("AbsoluteMaximum") { }
+  public override ISymbolicExpressionTreeNode Expand(ISymbolicExpressionTreeNode[] arguments) {
+    var input = arguments[0];
+    var max = new Max().CreateTreeNode();
+    var abs = new Absolute().CreateTreeNode();
+    max.AddSubtree(abs);
+    abs.AddSubtree(input);
+    return max;
+  }
 }
 
 [Item("AbsoluteSumOfChanges", ""), StorableType("FF5A90D4-2D91-4DA3-B47E-CBE3D014C968")]

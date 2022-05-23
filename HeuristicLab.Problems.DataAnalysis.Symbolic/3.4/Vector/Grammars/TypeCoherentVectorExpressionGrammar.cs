@@ -52,6 +52,8 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
   private const string VectorTerminalsName = "Vector Terminals";
   private const string VectorSymbolsName = "Vector Symbols";
 
+  private const string VectorScalingName = "Vector Scaling";
+  private const string VectorReorderingName = "Vector Reordering";
   private const string VectorLengthManipulationName = "Vector Length Manipulation";
   private const string VectorSubVectorName = "Vector Sub-Vector Functions";
   
@@ -147,19 +149,18 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     var vectorPower = new Power() { Name = "Vector Power" };
     var vectorRoot = new Root() { Name = "Vector Root" };
 
-    // var vectorNormalize = new Normalize() { Name = "Vector Normalize", Enabled = false };    
-    // var vectorStandardize = new Standardize() { Name = "Vector Standardize", Enabled = false };
-    //
-    // var vectorSort = new Sort() { Name = "Vector Sort", Enabled = false };
-    // // TODO; asc vs desc?
-    // var vectorReverse = new Reverse() { Name = "Vector Reverse", Enabled = false };
-    // var vectorShift = new Shift() { Name = "Vector Shift", Enabled = false }; // roll?
+    var vectorNormalize = new Normalize() { Name = "Vector Normalize", Enabled = false };    
+    var vectorStandardize = new Standardize() { Name = "Vector Standardize", Enabled = false };
+    
+    var vectorSort = new Sort() { Name = "Vector Sort", Enabled = false };
+    var vectorSortDescending = new Sort() { Name = "Vector Sort Descending", Enabled = false };
+    var vectorReverse = new Reverse() { Name = "Vector Reverse", Enabled = false };
+    var vectorRoll = new Roll() { Name = "Vector Roll", Enabled = false };
     
     var vectorVariable = new Variable() { Name = "Vector Variable" };
 
     #region TimeSeries Symbols
     var absoluteEnergy = new AbsoluteEnergy() { Enabled = false };
-    var absoluteEnergy2 = new AbsoluteEnergy2() { Enabled = false };
     var augmentedDickeyFullerTestStatistic = new AugmentedDickeyFullerTestStatistic() { Enabled = false };
     var binnedEntropy = new BinnedEntropy() { Enabled = false };
     var hasLargeStandardDeviation = new LargeStandardDeviation() { Enabled = false };
@@ -196,56 +197,57 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     #endregion
     #endregion
 
-    #region vector manipulation symbol declaration
+    #region vector length manipulation symbol declaration
     var subvectorLocal = new SubVector();
     var subvectorSubtree = new SubVectorSubtree();
+    var vectorResample = new Resample();
+    var vectorDiff = new Diff();
     #endregion
 
     #region group symbol declaration
-    var arithmeticSymbols = new GroupSymbol(ArithmeticFunctionsName, new List<ISymbol>() { add, sub, mul, div });
-    var trigonometricSymbols = new GroupSymbol(TrigonometricFunctionsName, new List<ISymbol>() { sin, cos, tan });
-    var exponentialAndLogarithmicSymbols = new GroupSymbol(ExponentialFunctionsName, new List<ISymbol> { exp, log });
-    var powerSymbols = new GroupSymbol(PowerFunctionsName, new List<ISymbol> { square, sqrt, cube, cubeRoot, power, root });
-    var terminalSymbols = new GroupSymbol(TerminalsName, new List<ISymbol> { constant, number, /*numberZeroToOne, numberPositive,*/ variable, binFactorVariable, factorVariable });
-    var statisticsSymbols = new GroupSymbol(VectorStatisticsName, new List<ISymbol> { mean, median, stdDev, sum, length, min, max, quantile, meanDev, iqr, variance, skewness, kurtosis });
-    var comparisonSymbols = new GroupSymbol(VectorSimilaritiesName, new List<ISymbol> { euclideanDistance, covariance, pearsonCorrelation, spearmanRankCorrelation });
-    var distributionCharacteristicsSymbols = new GroupSymbol(VectorDistributionCharacteristicsName, new List<ISymbol> {
-      absoluteEnergy, absoluteEnergy2, augmentedDickeyFullerTestStatistic, binnedEntropy, 
+    var arithmeticSymbols = new GroupSymbol(ArithmeticFunctionsName, add, sub, mul, div);
+    var trigonometricSymbols = new GroupSymbol(TrigonometricFunctionsName, sin, cos, tan);
+    var exponentialAndLogarithmicSymbols = new GroupSymbol(ExponentialFunctionsName, exp, log);
+    var powerSymbols = new GroupSymbol(PowerFunctionsName, square, sqrt, cube, cubeRoot, power, root);
+    var terminalSymbols = new GroupSymbol(TerminalsName, constant, number, /*numberZeroToOne, numberPositive,*/ variable, binFactorVariable, factorVariable);
+    var statisticsSymbols = new GroupSymbol(VectorStatisticsName, mean, median, stdDev, sum, length, min, max, quantile, meanDev, iqr, variance, skewness, kurtosis);
+    var comparisonSymbols = new GroupSymbol(VectorSimilaritiesName, euclideanDistance, covariance, pearsonCorrelation, spearmanRankCorrelation);
+    var distributionCharacteristicsSymbols = new GroupSymbol(VectorDistributionCharacteristicsName,
+      absoluteEnergy, augmentedDickeyFullerTestStatistic, binnedEntropy, 
       hasLargeStandardDeviation, hasVarianceLargerThanStd, isSymmetricLooking, massQuantile,
-      numberDataPointsAboveMean, numberDataPointsBelowMean, });
-    var timeSeriesDynamicsSymbols = new GroupSymbol(VectorTimeSeriesDynamicsName, new List<ISymbol> {
+      numberDataPointsAboveMean, numberDataPointsBelowMean);
+    var timeSeriesDynamicsSymbols = new GroupSymbol(VectorTimeSeriesDynamicsName,
       arimaModelCoefficients, continuousWaveletTransformationCoefficients, fastFourierTransformationCoefficient,
       firstIndexMax, firstIndexMin, lastIndexMax, lastIndexMin,
       longestStrikeAboveMean, longestStrikeAboveMedian, longestStrikeBelowMean, longestStrikeBelowMedian, longestStrikePositive, longestStrikePositive, longestStrikeNegative, longestStrikeZero,
       meanAbsoluteChange, meanAbsoluteChangeQuantiles, meanAutocorrelation, laggedAutocorrelation, meanSecondDerivateCentral, meanSecondDerivateCentral,
       numberPeaksOfSize, largeNumberOfPeaks, timeReversalAsymmetryStatistic, spectralWelchDensity, numberContinuousWaveletTransformationPeaksOfSize
-    });
-    var aggregationSymbols = new GroupSymbol(VectorAggregationName, new List<ISymbol> { statisticsSymbols, comparisonSymbols, distributionCharacteristicsSymbols, timeSeriesDynamicsSymbols });
-    var scalarSymbols = new GroupSymbol(ScalarSymbolsName, new List<ISymbol>() { arithmeticSymbols, trigonometricSymbols, exponentialAndLogarithmicSymbols, powerSymbols, terminalSymbols, aggregationSymbols });
+    );
+    var aggregationSymbols = new GroupSymbol(VectorAggregationName, statisticsSymbols, comparisonSymbols, distributionCharacteristicsSymbols, timeSeriesDynamicsSymbols);
+    var scalarSymbols = new GroupSymbol(ScalarSymbolsName, arithmeticSymbols, trigonometricSymbols, exponentialAndLogarithmicSymbols, powerSymbols, terminalSymbols, aggregationSymbols);
 
-    var vectorArithmeticSymbols = new GroupSymbol(VectorArithmeticFunctionsName, new List<ISymbol>() { vectorAdd, vectorSub, vectorMul, vectorDiv });
-    //var vectorComparisonSymbols = new GroupSymbol(VectorComparisonFunctionsName, new List<ISymbol>() { vectorEquals, vectorNotEquals, vectorLess, vectorLessOrEqual, vectorGreater, vectorGreaterOrEqual });
-    var vectorTrigonometricSymbols = new GroupSymbol(VectorTrigonometricFunctionsName, new List<ISymbol>() { vectorSin, vectorCos, vectorTan });
-    var vectorExponentialAndLogarithmicSymbols = new GroupSymbol(VectorExponentialFunctionsName, new List<ISymbol> { vectorExp, vectorLog });
-    var vectorPowerSymbols = new GroupSymbol(VectorPowerFunctionsName, new List<ISymbol> { vectorSquare, vectorSqrt, vectorCube, vectorCubeRoot, vectorPower, vectorRoot });
-    var vectorTerminalSymbols = new GroupSymbol(VectorTerminalsName, new List<ISymbol> { vectorVariable });
-    //var scalingSymbols = new GroupSymbol(ScalingName, new List<ISymbol>(new[] { vectorNormalize, vectorStandardize }));
-    //var reorderingSymbols = new GroupSymbol(ReorderName, new List<ISymbol>(new[] { vectorSort, vectorReverse, vectorShift }));
-    var vectorSymbols = new GroupSymbol(VectorSymbolsName, new List<ISymbol>() { vectorArithmeticSymbols, /*vectorComparisonSymbols,*/ vectorTrigonometricSymbols, vectorExponentialAndLogarithmicSymbols, vectorPowerSymbols, vectorTerminalSymbols, /*reorderingSymbols, scalingSymbols,*/ });
+    var vectorArithmeticSymbols = new GroupSymbol(VectorArithmeticFunctionsName, vectorAdd, vectorSub, vectorMul, vectorDiv);
+    //var vectorComparisonSymbols = new GroupSymbol(VectorComparisonFunctionsName, vectorEquals, vectorNotEquals, vectorLess, vectorLessOrEqual, vectorGreater, vectorGreaterOrEqual);
+    var vectorTrigonometricSymbols = new GroupSymbol(VectorTrigonometricFunctionsName, vectorSin, vectorCos, vectorTan);
+    var vectorExponentialAndLogarithmicSymbols = new GroupSymbol(VectorExponentialFunctionsName, vectorExp, vectorLog );
+    var vectorPowerSymbols = new GroupSymbol(VectorPowerFunctionsName, vectorSquare, vectorSqrt, vectorCube, vectorCubeRoot, vectorPower, vectorRoot);
+    var vectorTerminalSymbols = new GroupSymbol(VectorTerminalsName, vectorVariable);
+    var scalingSymbols = new GroupSymbol(VectorScalingName, vectorNormalize, vectorStandardize);
+    var reorderingSymbols = new GroupSymbol(VectorReorderingName, vectorSort, vectorSortDescending, vectorReverse, vectorRoll);
+    var vectorSymbols = new GroupSymbol(VectorSymbolsName, vectorArithmeticSymbols, /*vectorComparisonSymbols,*/ vectorTrigonometricSymbols, vectorExponentialAndLogarithmicSymbols, vectorPowerSymbols, vectorTerminalSymbols, reorderingSymbols, scalingSymbols);
 
-    var vectorSubVectorSymbols = new GroupSymbol(VectorSubVectorName, new List<ISymbol>() { subvectorLocal, subvectorSubtree });
-    // TODO: resample & rolling manipulation
+    var vectorSubVectorSymbols = new GroupSymbol(VectorSubVectorName, subvectorLocal, subvectorSubtree);
     // TODO: moving mean/median/...?
-    var vectorManipulationSymbols = new GroupSymbol(VectorLengthManipulationName, new List<ISymbol>() { vectorSubVectorSymbols });
-    var miscSymbols = new GroupSymbol(MiscSymbolsName, new List<ISymbol>() { numberZeroToOne, numberPositive });
+    var vectorLengthManipulationSymbols = new GroupSymbol(VectorLengthManipulationName, vectorSubVectorSymbols, vectorResample, vectorDiff);
+    var miscSymbols = new GroupSymbol(MiscSymbolsName, numberZeroToOne, numberPositive);
 
-    //var realValuedSymbols = new GroupSymbol(RealValuedSymbolsName, new List<ISymbol> { scalarSymbols, vectorSymbols });
+    //var realValuedSymbols = new GroupSymbol(RealValuedSymbolsName, scalarSymbols, vectorSymbols);
     #endregion
 
     //AddSymbol(realValuedSymbols);
     AddSymbol(scalarSymbols);
     AddSymbol(vectorSymbols);
-    AddSymbol(vectorManipulationSymbols);
+    AddSymbol(vectorLengthManipulationSymbols);
     AddSymbol(miscSymbols);
 
     #region subtree count configuration
@@ -266,7 +268,7 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     SetSubtreeCount(comparisonSymbols, 2, 2);
     #region TimeSeries symbols
     foreach (var sy in new Symbol[] {
-      absoluteEnergy, absoluteEnergy2, augmentedDickeyFullerTestStatistic,
+      absoluteEnergy, augmentedDickeyFullerTestStatistic,
       /*hasLargeStandardDeviation,*/ hasVarianceLargerThanStd, /*isSymmetricLooking,*/
       numberDataPointsAboveMean, numberDataPointsBelowMean, 
     }) SetSubtreeCount(sy, 1, 1);
