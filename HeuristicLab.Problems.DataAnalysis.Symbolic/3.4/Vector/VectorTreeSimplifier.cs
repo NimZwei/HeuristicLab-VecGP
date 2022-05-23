@@ -255,6 +255,10 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
     private static bool IsMax(ISymbolicExpressionTreeNode node) {
       return node.Symbol is Max;
     }
+    
+    private static bool IsComposite(ISymbolicExpressionTreeNode node) {
+      return node.Symbol is CompositeSymbol;
+    }
 
     #endregion
 
@@ -318,6 +322,8 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
         return SimplifyMinAggregation(original);
       } else if (IsMax(original)) {
         return SimplifyMaxAggregation(original);
+      } else if (IsComposite(original)) {
+        return SimplifyComposite(original);
       } else {
         return SimplifyAny(original);
       }
@@ -475,6 +481,13 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
 
     private ISymbolicExpressionTreeNode SimplifyMaxAggregation(ISymbolicExpressionTreeNode original) {
       return MakeMaxAggregation(GetSimplifiedTree(original.GetSubtree(0)));
+    }
+
+    private ISymbolicExpressionTreeNode SimplifyComposite(ISymbolicExpressionTreeNode original) {
+      var node = (CompositeTreeNode)original;
+      var symbol = node.Symbol;
+      var arguments = original.Subtrees.Select(GetSimplifiedTree).ToArray();
+      return ExpandComposite(symbol, arguments);
     }
 
     #endregion
@@ -1432,6 +1445,10 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
           var maxNode = MakeMaxAggregation(vectorNode);
           return Product(scalarNode, maxNode);
         });
+    }
+
+    private ISymbolicExpressionTreeNode ExpandComposite(CompositeSymbol symbol, ISymbolicExpressionTreeNode[] arguments) {
+      return symbol.Expand(arguments);
     }
 
     private static IEnumerable<ISymbolicExpressionTreeNode> InvertNodes(IEnumerable<ISymbolicExpressionTreeNode> nodes, Func<ISymbolicExpressionTreeNode, ISymbolicExpressionTreeNode> invertFunc) {
