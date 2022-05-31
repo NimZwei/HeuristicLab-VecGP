@@ -153,7 +153,7 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     var vectorStandardize = new Standardize() { Name = "Vector Standardize", Enabled = false };
     
     var vectorSort = new Sort() { Name = "Vector Sort", Enabled = false };
-    var vectorSortDescending = new Sort() { Name = "Vector Sort Descending", Enabled = false };
+    var vectorSortDescending = new SortDescending() { Name = "Vector Sort Descending", Enabled = false };
     var vectorReverse = new Reverse() { Name = "Vector Reverse", Enabled = false };
     var vectorRoll = new Roll() { Name = "Vector Roll", Enabled = false };
     

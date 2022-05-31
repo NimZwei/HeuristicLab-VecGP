@@ -145,6 +145,12 @@
       <DependentUpon>SymbolicDataAnalysisModelMathView.cs</DependentUpon>
     </Compile>
     <Compile Include="Plugin.cs" />
+    <Compile Include="Symbols\CompositeSymbolView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Symbols\CompositeSymbolView.Designer.cs">
+      <DependentUpon>CompositeSymbolView.cs</DependentUpon>
+    </Compile>
     <Compile Include="Symbols\ConstantView.cs">
       <SubType>UserControl</SubType>
     </Compile>

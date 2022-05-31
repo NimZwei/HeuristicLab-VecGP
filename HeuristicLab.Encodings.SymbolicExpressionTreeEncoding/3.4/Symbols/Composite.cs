@@ -48,7 +48,8 @@ public sealed class CompositeParameterSymbol : Symbol {
   public override int MaximumArity => 0;
   
   [Storable] public int ParameterIndex { get; private set; }
-  public CompositeParameterSymbol(int parameterIndex, string name = "Parameter", string description = "") : base(name, description) {
+  public CompositeParameterSymbol(int parameterIndex, string name = "Parameter", string description = "") 
+    : base($"[{parameterIndex}]: {name}", description) {
     ParameterIndex = parameterIndex;
   }
   [StorableConstructor] private CompositeParameterSymbol(StorableConstructorFlag _) : base(_) { }
@@ -82,13 +83,11 @@ public sealed class CompositeTreeNode : SymbolicExpressionTreeNode {
     
     return expandedTree;
   }
-
   private static Dictionary<CompositeParameterSymbol, ISymbolicExpressionTreeNode> GetParameterMappings(ISymbolicExpressionTreeNode prototype) {
     return prototype.IterateNodesPrefix()
       .Where(node => node.Symbol is CompositeParameterSymbol)
       .ToDictionary(node => (CompositeParameterSymbol)node.Symbol, node => node);
   }
-  
   private static void ReplaceArguments(IDictionary<CompositeParameterSymbol, ISymbolicExpressionTreeNode> parameterMappings, IList<ISymbolicExpressionTreeNode> arguments) {
     foreach (var mapping in parameterMappings) {
       var symbol = mapping.Key;
