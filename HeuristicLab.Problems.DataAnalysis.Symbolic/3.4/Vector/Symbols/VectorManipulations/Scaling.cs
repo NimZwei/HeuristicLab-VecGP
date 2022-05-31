@@ -23,6 +23,7 @@ using HEAL.Attic;
 using HeuristicLab.Common;
 using HeuristicLab.Core;
 using HeuristicLab.Encodings.SymbolicExpressionTreeEncoding;
+using Node = HeuristicLab.Encodings.SymbolicExpressionTreeEncoding.SymbolicExpressionTreeNode;
 
 namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Vector; 
 
@@ -33,23 +34,24 @@ public class Normalize : CompositeSymbol {
   [StorableConstructor] protected Normalize(StorableConstructorFlag _) : base(_) { }
   protected Normalize(Normalize original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new Normalize(this, cloner); }
-  public Normalize() : base("Normalize", "") { }
-  public override ISymbolicExpressionTreeNode Expand(ISymbolicExpressionTreeNode[] arguments) {
-    var input = arguments[0];
-    var min = new Min().CreateTreeNode();
-    min.AddSubtree((ISymbolicExpressionTreeNode)input.Clone());
-    var max = new Max().CreateTreeNode();
-    max.AddSubtree((ISymbolicExpressionTreeNode)input.Clone());
-    var range = new Subtraction().CreateTreeNode();
-    range.AddSubtree(max);
-    range.AddSubtree(min);
-    var sub = new Subtraction().CreateTreeNode();
-    sub.AddSubtree((ISymbolicExpressionTreeNode)input.Clone());
-    sub.AddSubtree(min);
-    var div = new Division().CreateTreeNode();
-    div.AddSubtree(sub);
-    div.AddSubtree(range);
-    return div;
+  public Normalize() : base("Normalize", "") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    Prototype = new Node(new Division()) {
+      new Node(new Subtraction()) {
+        inputParameter.CreateTreeNode(),
+        new Node(new Min()) {
+          inputParameter.CreateTreeNode()
+        }
+      },
+      new Node(new Subtraction()) { // range
+        new Node(new Max()) {
+          inputParameter.CreateTreeNode()
+        },
+        new Node(new Min()) {
+          inputParameter.CreateTreeNode()
+        }
+      }
+    };
   }
 }
 
@@ -60,19 +62,18 @@ public class Standardize : CompositeSymbol {
   [StorableConstructor] protected Standardize(StorableConstructorFlag _) : base(_) { }
   protected Standardize(Standardize original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new Standardize(this, cloner); }
-  public Standardize() : base("Standardize", "") { }
-  public override ISymbolicExpressionTreeNode Expand(ISymbolicExpressionTreeNode[] arguments) {
-    var input = arguments[0];
-    var mean = new Mean().CreateTreeNode();
-    mean.AddSubtree((ISymbolicExpressionTreeNode)input.Clone());
-    var sd = new StandardDeviation().CreateTreeNode();
-    sd.AddSubtree((ISymbolicExpressionTreeNode)input.Clone());
-    var sub = new Subtraction().CreateTreeNode();
-    sub.AddSubtree((ISymbolicExpressionTreeNode)input.Clone());
-    sub.AddSubtree(mean);
-    var div = new Division().CreateTreeNode();
-    div.AddSubtree(sub);
-    div.AddSubtree(sd);
-    return div;
+  public Standardize() : base("Standardize", "") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    Prototype = new Node(new Division()) {
+      new Node(new Subtraction()) {
+        inputParameter.CreateTreeNode(),
+        new Node(new Mean()) {
+          inputParameter.CreateTreeNode()
+        }
+      },
+      new Node(new StandardDeviation()) {
+        inputParameter.CreateTreeNode()
+      }
+    };
   }
 }

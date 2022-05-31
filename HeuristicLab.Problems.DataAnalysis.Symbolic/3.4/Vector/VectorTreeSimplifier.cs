@@ -485,9 +485,8 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
 
     private ISymbolicExpressionTreeNode SimplifyComposite(ISymbolicExpressionTreeNode original) {
       var node = (CompositeTreeNode)original;
-      var symbol = node.Symbol;
-      var arguments = original.Subtrees.Select(GetSimplifiedTree).ToArray();
-      return ExpandComposite(symbol, arguments);
+      var arguments = original.Subtrees.Select(GetSimplifiedTree);
+      return ExpandComposite(node, arguments);
     }
 
     #endregion
@@ -1447,9 +1446,9 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
         });
     }
 
-    private ISymbolicExpressionTreeNode ExpandComposite(CompositeSymbol symbol, ISymbolicExpressionTreeNode[] arguments) {
-      return symbol.Expand(arguments);
-    }
+     private ISymbolicExpressionTreeNode ExpandComposite(CompositeTreeNode node, IEnumerable<ISymbolicExpressionTreeNode> arguments) {
+       return node.CreateExpandedTreeNode(arguments.ToList());
+     }
 
     private static IEnumerable<ISymbolicExpressionTreeNode> InvertNodes(IEnumerable<ISymbolicExpressionTreeNode> nodes, Func<ISymbolicExpressionTreeNode, ISymbolicExpressionTreeNode> invertFunc) {
       if (nodes.Count() == 1)

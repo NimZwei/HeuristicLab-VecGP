@@ -20,6 +20,7 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using HeuristicLab.Common;
 using HeuristicLab.Core;
@@ -165,6 +166,9 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
     public virtual int IndexOfSubtree(ISymbolicExpressionTreeNode tree) {
       return subtrees.IndexOf(tree);
     }
+
+    // For collection initializer
+    public void Add(ISymbolicExpressionTreeNode tree) { AddSubtree(tree); } 
     public virtual void AddSubtree(ISymbolicExpressionTreeNode tree) {
       subtrees.Add(tree);
       tree.Parent = this;
@@ -236,10 +240,17 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
       }
       a(this);
     }
-
+    
     public override string ToString() {
       if (Symbol != null) return Symbol.Name;
       return "SymbolicExpressionTreeNode";
+    }
+
+    public IEnumerator<ISymbolicExpressionTreeNode> GetEnumerator() {
+      return subtrees.GetEnumerator();
+    }
+    IEnumerator IEnumerable.GetEnumerator() {
+      return GetEnumerator();
     }
 
     private void ResetCachedValues() {

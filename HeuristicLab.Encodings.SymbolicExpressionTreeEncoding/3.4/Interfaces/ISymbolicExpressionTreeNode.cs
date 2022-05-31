@@ -26,7 +26,7 @@ using HEAL.Attic;
 
 namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
   [StorableType("1a0ee1b9-590f-4763-890b-fba196a8f3fd")]
-  public interface ISymbolicExpressionTreeNode : IDeepCloneable {
+  public interface ISymbolicExpressionTreeNode : IDeepCloneable, IEnumerable<ISymbolicExpressionTreeNode> {
     ISymbolicExpressionTreeGrammar Grammar { get; }
     ISymbolicExpressionTreeNode Parent { get; set; }
     ISymbol Symbol { get; }
@@ -49,6 +49,7 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
     int SubtreeCount { get; }
     ISymbolicExpressionTreeNode GetSubtree(int index);
     int IndexOfSubtree(ISymbolicExpressionTreeNode tree);
+    void Add(ISymbolicExpressionTreeNode tree);
     void AddSubtree(ISymbolicExpressionTreeNode tree);
     void InsertSubtree(int index, ISymbolicExpressionTreeNode tree);
     void RemoveSubtree(int index);

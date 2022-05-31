@@ -26,6 +26,7 @@ using HEAL.Attic;
 using HeuristicLab.Common;
 using HeuristicLab.Core;
 using HeuristicLab.Encodings.SymbolicExpressionTreeEncoding;
+using Node = HeuristicLab.Encodings.SymbolicExpressionTreeEncoding.SymbolicExpressionTreeNode;
 
 namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Vector; 
 
@@ -44,16 +45,13 @@ public sealed class AbsoluteEnergy : CompositeSymbol {
   [StorableConstructor] private AbsoluteEnergy(StorableConstructorFlag _) : base(_) { }
   private AbsoluteEnergy(AbsoluteEnergy original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new AbsoluteEnergy(this, cloner); }
-  public AbsoluteEnergy() : base("AbsoluteEnergy") { }
-
-  public override ISymbolicExpressionTreeNode Expand(ISymbolicExpressionTreeNode[] arguments) {
-    if (arguments.Length != 1) throw new InvalidOperationException($"Expected 1 argument but were {arguments.Length}.");
-    var input = arguments[0];
-    var square = new Square().CreateTreeNode();
-    var sum = new Sum().CreateTreeNode();
-    sum.AddSubtree(square);
-    square.AddSubtree(input);
-    return sum;
+  public AbsoluteEnergy() : base("AbsoluteEnergy") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    Prototype = new Node(new Sum()) {
+      new Node(new Square()) {
+        inputParameter.CreateTreeNode()
+      }
+    };
   }
 }
 
@@ -64,14 +62,13 @@ public sealed class AbsoluteMaximum : CompositeSymbol {
   [StorableConstructor] private AbsoluteMaximum(StorableConstructorFlag _) : base(_) { }
   private AbsoluteMaximum(AbsoluteMaximum original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new AbsoluteMaximum(this, cloner); }
-  public AbsoluteMaximum() : base("AbsoluteMaximum") { }
-  public override ISymbolicExpressionTreeNode Expand(ISymbolicExpressionTreeNode[] arguments) {
-    var input = arguments[0];
-    var max = new Max().CreateTreeNode();
-    var abs = new Absolute().CreateTreeNode();
-    max.AddSubtree(abs);
-    abs.AddSubtree(input);
-    return max;
+  public AbsoluteMaximum() : base("AbsoluteMaximum") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    Prototype = new Node(new Max()) {
+      new Node(new Absolute()) {
+        inputParameter.CreateTreeNode()
+      }
+    };
   }
 }
 

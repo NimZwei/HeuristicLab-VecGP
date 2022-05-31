@@ -24,6 +24,7 @@ using HEAL.Attic;
 using HeuristicLab.Common;
 using HeuristicLab.Core;
 using HeuristicLab.Encodings.SymbolicExpressionTreeEncoding;
+using Node = HeuristicLab.Encodings.SymbolicExpressionTreeEncoding.SymbolicExpressionTreeNode;
 
 namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Vector; 
 
@@ -34,19 +35,14 @@ public sealed class GreaterOrEqualThan : CompositeSymbol {
   [StorableConstructor] private GreaterOrEqualThan(StorableConstructorFlag _) : base(_) { }
   private GreaterOrEqualThan(GreaterOrEqualThan original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new GreaterOrEqualThan(this, cloner); }
-  public GreaterOrEqualThan() : base("GreaterOrEqualThan") { }
-  public override ISymbolicExpressionTreeNode Expand(ISymbolicExpressionTreeNode[] arguments) {
-    if (arguments.Length != 2) throw new InvalidOperationException($"Expected 2 arguments but were {arguments.Length}");
-    var lhs = arguments[0];
-    var rhs = arguments[1];
-
-    var not = new Not().CreateTreeNode();
-    var less = new LessThan().CreateTreeNode();
-
-    not.AddSubtree(less);
-    less.AddSubtree(lhs);
-    less.AddSubtree(rhs);
-
-    return not;
+  public GreaterOrEqualThan() : base("GreaterOrEqualThan") {
+    var leftParameter = new CompositeParameterSymbol(0, "Left");
+    var rightParameter = new CompositeParameterSymbol(1, "Right");
+    Prototype = new Node(new Not()) {
+      new Node(new LessThan()) {
+        leftParameter.CreateTreeNode(),
+        rightParameter.CreateTreeNode()
+      }
+    };
   }
 }

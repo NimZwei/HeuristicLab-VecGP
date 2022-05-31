@@ -23,6 +23,7 @@ using HEAL.Attic;
 using HeuristicLab.Common;
 using HeuristicLab.Core;
 using HeuristicLab.Encodings.SymbolicExpressionTreeEncoding;
+using Node = HeuristicLab.Encodings.SymbolicExpressionTreeEncoding.SymbolicExpressionTreeNode;
 
 namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Vector; 
 
@@ -53,11 +54,12 @@ public sealed class SortDescending : CompositeSymbol {
   [StorableConstructor] private SortDescending(StorableConstructorFlag _) : base(_) { }
   private SortDescending(SortDescending original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new SortDescending(this, cloner); }
-  public SortDescending() : base("SortDescending", "") { }
-  public override ISymbolicExpressionTreeNode Expand(ISymbolicExpressionTreeNode[] arguments) {
-    var reverse = new Reverse().CreateTreeNode();
-    var sort = new Sort().CreateTreeNode();
-    reverse.AddSubtree(sort);
-    return reverse;
+  public SortDescending() : base("SortDescending", "") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    Prototype = new Node(new Reverse()) {
+      new Node(new Sort()) {
+        inputParameter.CreateTreeNode()
+      }
+    };
   }
 }

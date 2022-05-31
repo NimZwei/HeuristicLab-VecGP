@@ -19,6 +19,8 @@
  */
 #endregion
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using HEAL.Attic;
 using HeuristicLab.Common;
@@ -29,16 +31,31 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding;
 [Item("CompositeSymbol", "")]
 [StorableType("CF0A98A8-A735-4E6E-A9AF-4E4456819E85")]
 public abstract class CompositeSymbol : Symbol {
-  [StorableConstructor] protected CompositeSymbol(StorableConstructorFlag _) : base(_) { }
-  protected CompositeSymbol(CompositeSymbol original, Cloner cloner) : base(original, cloner) { }
-  protected CompositeSymbol(string name) : base(name, "") { }
-  protected CompositeSymbol(string name, string description) : base(name, description) { }
+  [Storable] public ISymbolicExpressionTreeNode Prototype { get; protected set; }
 
-  public override ISymbolicExpressionTreeNode CreateTreeNode() {
-    return new CompositeTreeNode(this);
+  protected CompositeSymbol(string name, string description = "") : base(name, description) { }
+  protected CompositeSymbol(CompositeSymbol original, Cloner cloner) : base(original, cloner) {
+    this.Prototype = cloner.Clone(original.Prototype);
   }
+  [StorableConstructor] protected CompositeSymbol(StorableConstructorFlag _) : base(_) { }
+  public override ISymbolicExpressionTreeNode CreateTreeNode() { return new CompositeTreeNode(this); }
+}
 
-  public abstract ISymbolicExpressionTreeNode Expand(ISymbolicExpressionTreeNode[] arguments);
+[Item("CompositeParameterSymbol", "")]
+[StorableType("4DA295D5-2BED-4E99-A5C5-A4B2A2B62A75")]
+public sealed class CompositeParameterSymbol : Symbol {
+  public override int MinimumArity => 0;
+  public override int MaximumArity => 0;
+  
+  [Storable] public int ParameterIndex { get; private set; }
+  public CompositeParameterSymbol(int parameterIndex, string name = "Parameter", string description = "") : base(name, description) {
+    ParameterIndex = parameterIndex;
+  }
+  [StorableConstructor] private CompositeParameterSymbol(StorableConstructorFlag _) : base(_) { }
+  private CompositeParameterSymbol(CompositeParameterSymbol original, Cloner cloner) : base(original, cloner) {
+    this.ParameterIndex = original.ParameterIndex;
+  }
+  public override IDeepCloneable Clone(Cloner cloner) { return new CompositeParameterSymbol(this, cloner); }
 }
 
 [Item("CompositeTreeNode", "")]
@@ -52,7 +69,33 @@ public sealed class CompositeTreeNode : SymbolicExpressionTreeNode {
   public override IDeepCloneable Clone(Cloner cloner) { return new CompositeTreeNode(this, cloner); }
 
   public ISymbolicExpressionTreeNode CreateExpandedTreeNode() {
-    var arguments = this.Subtrees.Select(node => (ISymbolicExpressionTreeNode)node.Clone()).ToArray();
-    return Symbol.Expand(arguments);
+    return CreateExpandedTreeNode(this.Subtrees.ToList());
+  }
+  public ISymbolicExpressionTreeNode CreateExpandedTreeNode(IList<ISymbolicExpressionTreeNode> arguments) {
+    if (arguments.Count < Symbol.Prototype.IterateNodesPrefix().Max(node => (node.Symbol as CompositeParameterSymbol)?.ParameterIndex ?? 0))
+      throw new InvalidOperationException("Number of parameters (from symbol) does not match arguments (subtrees from node).");
+
+    var expandedTree = (ISymbolicExpressionTreeNode)Symbol.Prototype.Clone();
+    var parameterMappings = GetParameterMappings(expandedTree);
+    
+    ReplaceArguments(parameterMappings, arguments);
+    
+    return expandedTree;
+  }
+
+  private static Dictionary<CompositeParameterSymbol, ISymbolicExpressionTreeNode> GetParameterMappings(ISymbolicExpressionTreeNode prototype) {
+    return prototype.IterateNodesPrefix()
+      .Where(node => node.Symbol is CompositeParameterSymbol)
+      .ToDictionary(node => (CompositeParameterSymbol)node.Symbol, node => node);
+  }
+  
+  private static void ReplaceArguments(IDictionary<CompositeParameterSymbol, ISymbolicExpressionTreeNode> parameterMappings, IList<ISymbolicExpressionTreeNode> arguments) {
+    foreach (var mapping in parameterMappings) {
+      var symbol = mapping.Key;
+      var parameterNode = mapping.Value;
+      
+      var argument = (ISymbolicExpressionTreeNode)arguments[symbol.ParameterIndex].Clone();
+      parameterNode.Parent.ReplaceSubtree(parameterNode, argument);
+    }
   }
 }
