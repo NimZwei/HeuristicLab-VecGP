@@ -153,63 +153,215 @@ public sealed class CidCe : Symbol {
 }
 
 [Item("CountAbove", ""), StorableType("F0B19EC2-4253-41DA-94D1-A509D331D0EA")]
-public sealed class CountAbove : Symbol {
+public sealed class CountAbove : CompositeSymbol {
   public override int MinimumArity => 2;
   public override int MaximumArity => 2;
   [StorableConstructor] private CountAbove(StorableConstructorFlag _) : base(_) { }
   private CountAbove(CountAbove original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new CountAbove(this, cloner); }
-  public CountAbove() : base("CountAbove", "") { }
+  public CountAbove() : base("CountAbove", "") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    var thresholdParameter = new CompositeParameterSymbol(1, "Threshold");
+    Prototype = new Node(new Sum()) {
+      new Node(new GreaterThan()) {
+        inputParameter.CreateTreeNode(),
+        thresholdParameter.CreateTreeNode()
+      }
+    };
+  }
 }
 
 [Item("CountAboveMean", ""), StorableType("9DB3F61C-3B23-4A26-B544-7122E8D60CE2")]
-public sealed class CountAboveMean : Symbol {
+public sealed class CountAboveMean : CompositeSymbol {
   public override int MinimumArity => 1;
   public override int MaximumArity => 1;
   [StorableConstructor] private CountAboveMean(StorableConstructorFlag _) : base(_) { }
   private CountAboveMean(CountAboveMean original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new CountAboveMean(this, cloner); }
-  public CountAboveMean() : base("CountAboveMean", "") { }
+  public CountAboveMean() : base("CountAboveMean", "") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    Prototype = new Node(new CountAbove()) {
+      inputParameter.CreateTreeNode(),
+      new Node(new Mean()) {
+        inputParameter.CreateTreeNode()
+      }
+    };
+  }
 }
 
 [Item("CountBelow", ""), StorableType("8AFCA029-E92A-4F70-BDDA-708113E22E44")]
-public sealed class CountBelow : Symbol {
+public sealed class CountBelow : CompositeSymbol {
   public override int MinimumArity => 2;
   public override int MaximumArity => 2;
   [StorableConstructor] private CountBelow(StorableConstructorFlag _) : base(_) { }
   private CountBelow(CountBelow original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new CountBelow(this, cloner); }
-  public CountBelow() : base("CountBelow", "") { }
+  public CountBelow() : base("CountBelow", "") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    var thresholdParameter = new CompositeParameterSymbol(1, "Threshold");
+    Prototype = new Node(new Sum()) {
+      new Node(new LessThan()) {
+        inputParameter.CreateTreeNode(),
+        thresholdParameter.CreateTreeNode()
+      }
+    };
+  }
 }
 
 [Item("CountBelowMean", ""), StorableType("AB4F5432-9B86-4A4B-93B2-72D4D2CC56FB")]
-public sealed class CountBelowMean : Symbol {
+public sealed class CountBelowMean : CompositeSymbol {
   public override int MinimumArity => 1;
   public override int MaximumArity => 1;
   [StorableConstructor] private CountBelowMean(StorableConstructorFlag _) : base(_) { }
   private CountBelowMean(CountBelowMean original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new CountBelowMean(this, cloner); }
-  public CountBelowMean() : base("CountBelowMean", "") { }
+  public CountBelowMean() : base("CountBelowMean", "") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    Prototype = new Node(new CountBelow()) {
+      inputParameter.CreateTreeNode(),
+      new Node(new Mean()) {
+        inputParameter.CreateTreeNode()
+      }
+    };
+  }
+}
+
+[Item("CountBetween", ""), StorableType("0AFFD3B7-27CA-47DA-84F5-BFE3B39D928E")]
+public sealed class CountBetween : CompositeSymbol {
+  public override int MinimumArity => 3;
+  public override int MaximumArity => 3;
+  [StorableConstructor] private CountBetween(StorableConstructorFlag _) : base(_) { }
+  private CountBetween(CountBetween original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new CountBetween(this, cloner); }
+  public CountBetween() : base("RangeCount", "") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    var lowerThresholdParameter = new CompositeParameterSymbol(1, "LowerThreshold");
+    var upperThresholdParameter = new CompositeParameterSymbol(2, "UpperThreshold");
+    Prototype = new Node(new Sum()) {
+      new Node(new And()) {
+        new Node(new GreaterThan()) {
+          inputParameter.CreateTreeNode(),
+          lowerThresholdParameter.CreateTreeNode()
+        },
+        new Node(new LessThan()) {
+          inputParameter.CreateTreeNode(),
+          upperThresholdParameter.CreateTreeNode()
+        }
+      }
+    };
+  }
+}
+
+[Item("CountValue", ""), StorableType("44147242-D5A1-4590-BB80-FF4D3DFE7C50")]
+public sealed class CountValue : CompositeSymbol {
+  public override int MinimumArity => 2;
+  public override int MaximumArity => 2;
+  [StorableConstructor] private CountValue(StorableConstructorFlag _) : base(_) { }
+  private CountValue(CountValue original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new CountValue(this, cloner); }
+  public CountValue() : base("ValueCount", "") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    var comparisonValueParameter = new CompositeParameterSymbol(1, "ComparisonValue");
+    //var epsilonValueParameter = new CompositeParameterSymbol(2, "Epsilon");
+    Prototype = new Node(new Sum()) {
+      new Node(new Equals()) {
+        inputParameter.CreateTreeNode(),
+        comparisonValueParameter.CreateTreeNode()
+      }
+    };
+  }
+}
+
+[Item("CountValueClose", ""), StorableType("982BF3C6-4B58-4E91-BD49-FF09342400B4")]
+public sealed class CountValueClose : CompositeSymbol {
+  public override int MinimumArity => 3;
+  public override int MaximumArity => 3;
+  [StorableConstructor] private CountValueClose(StorableConstructorFlag _) : base(_) { }
+  private CountValueClose(CountValueClose original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new CountValueClose(this, cloner); }
+  public CountValueClose() : base("ValueCountCountValueClose", "") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    var comparisonValueParameter = new CompositeParameterSymbol(1, "ComparisonValue");
+    var epsilonValueParameter = new CompositeParameterSymbol(2, "Epsilon");
+    Prototype = new Node(new Sum()) {
+      new Node(new LessThan()) {
+        new Node(new Absolute()) {
+          new Node(new Subtraction()) {
+            inputParameter.CreateTreeNode(),
+            comparisonValueParameter.CreateTreeNode()
+          }
+        },
+        epsilonValueParameter.CreateTreeNode() 
+      }
+    };
+  }
+}
+
+[Item("FirstLocationOf", ""), StorableType("F7697939-896D-4364-9FE8-F9AD91A3E5B5")]
+public sealed class FirstLocationOf : CompositeSymbol {
+  public override int MinimumArity => 2;
+  public override int MaximumArity => 2;
+  [StorableConstructor] private FirstLocationOf(StorableConstructorFlag _) : base(_) { }
+  private FirstLocationOf(FirstLocationOf original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new FirstLocationOf(this, cloner); }
+  public FirstLocationOf() : base("FirstLocationOf", "") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    var comparisonValueParameter = new CompositeParameterSymbol(1, "ComparisonValue");
+    Prototype = new Node(new FirstLocationOfNonZero()) {
+      new Node(new Absolute()) {
+        new Node(new Subtraction()) {
+          inputParameter.CreateTreeNode(),
+          comparisonValueParameter.CreateTreeNode()
+        }
+      }
+    };
+  }
 }
 
 [Item("FirstLocationOfMaximum", ""), StorableType("DF7DE795-61C1-434E-B7AC-123871BB81D9")]
-public sealed class FirstLocationOfMaximum : Symbol {
+public sealed class FirstLocationOfMaximum : CompositeSymbol {
   public override int MinimumArity => 1;
   public override int MaximumArity => 1;
   [StorableConstructor] private FirstLocationOfMaximum(StorableConstructorFlag _) : base(_) { }
   private FirstLocationOfMaximum(FirstLocationOfMaximum original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new FirstLocationOfMaximum(this, cloner); }
-  public FirstLocationOfMaximum() : base("FirstLocationOfMaximum", "") { }
+  public FirstLocationOfMaximum() : base("FirstLocationOfMaximum", "") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    Prototype = new Node(new FirstLocationOf()) {
+      inputParameter.CreateTreeNode(),
+      new Node(new Max()) {
+        inputParameter.CreateTreeNode()
+      }
+    };
+  }
 }
 
 [Item("FirstLocationOfMinimum", ""), StorableType("AF8DF281-E68B-48AF-B13C-D8AFA212B52C")]
-public sealed class FirstLocationOfMinimum : Symbol {
+public sealed class FirstLocationOfMinimum : CompositeSymbol {
   public override int MinimumArity => 1;
   public override int MaximumArity => 1;
   [StorableConstructor] private FirstLocationOfMinimum(StorableConstructorFlag _) : base(_) { }
   private FirstLocationOfMinimum(FirstLocationOfMinimum original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new FirstLocationOfMinimum(this, cloner); }
-  public FirstLocationOfMinimum() : base("FirstLocationOfMinimum", "") { }
+  public FirstLocationOfMinimum() : base("FirstLocationOfMinimum", "") {
+    var inputParameter = new CompositeParameterSymbol(0, "Value");
+    Prototype = new Node(new FirstLocationOf()) {
+      inputParameter.CreateTreeNode(),
+      new Node(new Min()) {
+        inputParameter.CreateTreeNode()
+      }
+    };
+  }
+}
+
+[Item("FirstLocationOfNonZero", ""), StorableType("CBFAA308-B26F-4FD9-BD06-CB97B026A43B")]
+public sealed class FirstLocationOfNonZero : Symbol {
+  public override int MinimumArity => 1;
+  public override int MaximumArity => 1;
+  [StorableConstructor] private FirstLocationOfNonZero(StorableConstructorFlag _) : base(_) { }
+  private FirstLocationOfNonZero(FirstLocationOfNonZero original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new FirstLocationOfNonZero(this, cloner); }
+  public FirstLocationOfNonZero() : base("FirstLocationOfNonZero", "") { }
 }
 
 [Item("HasDuplicate", ""), StorableType("CC07787A-9B84-4A44-AA54-C3D199A3884E")]
@@ -457,16 +609,6 @@ public sealed class PermutationEntropy : Symbol {
   public PermutationEntropy() : base("PermutationEntropy", "") { }
 }
 
-[Item("RangeCount", ""), StorableType("0AFFD3B7-27CA-47DA-84F5-BFE3B39D928E")]
-public sealed class RangeCount : Symbol {
-  public override int MinimumArity => 3;
-  public override int MaximumArity => 3;
-  [StorableConstructor] private RangeCount(StorableConstructorFlag _) : base(_) { }
-  private RangeCount(RangeCount original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new RangeCount(this, cloner); }
-  public RangeCount() : base("RangeCount", "") { }
-}
-
 [Item("RatioBeyondRSigma", ""), StorableType("0AA4689C-6003-4572-A08A-1AD9E424DFD9")]
 public sealed class RatioBeyondRSigma : Symbol {
   public override int MinimumArity => 2;
@@ -545,16 +687,6 @@ public sealed class TimeReversalAsymmetryStatistic : Symbol {
   private TimeReversalAsymmetryStatistic(TimeReversalAsymmetryStatistic original, Cloner cloner) : base(original, cloner) { }
   public override IDeepCloneable Clone(Cloner cloner) { return new TimeReversalAsymmetryStatistic(this, cloner); }
   public TimeReversalAsymmetryStatistic() : base("TimeReversalAsymmetryStatistic", "") { }
-}
-
-[Item("ValueCount", ""), StorableType("44147242-D5A1-4590-BB80-FF4D3DFE7C50")]
-public sealed class ValueCount : Symbol {
-  public override int MinimumArity => 2;
-  public override int MaximumArity => 2;
-  [StorableConstructor] private ValueCount(StorableConstructorFlag _) : base(_) { }
-  private ValueCount(ValueCount original, Cloner cloner) : base(original, cloner) { }
-  public override IDeepCloneable Clone(Cloner cloner) { return new ValueCount(this, cloner); }
-  public ValueCount() : base("ValueCount", "") { }
 }
 
 [Item("HasVarianceLargerThanStandardDeviation", ""), StorableType("F2C40872-F7F5-45B8-9DDA-072C6479DF2F")]

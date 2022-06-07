@@ -46,3 +46,13 @@ public sealed class GreaterOrEqualThan : CompositeSymbol {
     };
   }
 }
+
+[Item("Equals", ""), StorableType("2E97EE32-3CAF-4223-B6C6-BCD5AF6B0522")]
+public sealed class Equals : Symbol {
+  public override int MinimumArity => 2;
+  public override int MaximumArity => 2;
+  [StorableConstructor] private Equals(StorableConstructorFlag _) : base(_) { }
+  private Equals(Equals original, Cloner cloner) : base(original, cloner) { }
+  public override IDeepCloneable Clone(Cloner cloner) { return new Equals(this, cloner); }
+  public Equals() : base("Equals", "") { }
+}
