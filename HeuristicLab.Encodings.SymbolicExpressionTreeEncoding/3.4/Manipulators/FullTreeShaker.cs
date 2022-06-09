@@ -53,7 +53,7 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
       return new FullTreeShaker(this, cloner);
     }
 
-    protected override void Manipulate(IRandom random, ISymbolicExpressionTree tree) {
+    public override void Manipulate(IRandom random, ISymbolicExpressionTree tree) {
       tree.Root.ForEachNodePostfix(node => {
         if (node.HasLocalParameters) {
           node.ShakeLocalParameters(random, ShakingFactor);

@@ -637,9 +637,10 @@ c,3.0000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
       TableFileParser parser = new TableFileParser();
       try {
         parser.Parse(tempFileName,
-          deCultureInfo.NumberFormat,
-          deCultureInfo.DateTimeFormat,
-          '\t',
+          new TableFileFormatOptions() {
+            NumberFormat = deCultureInfo.NumberFormat, DateTimeFormat = deCultureInfo.DateTimeFormat,
+            ColumnSeparator = '\t'
+          },
           true);
         Assert.AreEqual(6, parser.Rows);
         Assert.AreEqual(4, parser.Columns);
@@ -675,9 +676,11 @@ s,0,0,0");
       TableFileParser parser = new TableFileParser();
       try {
         parser.Parse(tempFileName,
-          CultureInfo.InvariantCulture.NumberFormat,
-          CultureInfo.InvariantCulture.DateTimeFormat,
-          ',',
+          new TableFileFormatOptions {
+            NumberFormat = CultureInfo.InvariantCulture.NumberFormat,
+            DateTimeFormat = CultureInfo.InvariantCulture.DateTimeFormat,
+            ColumnSeparator = ','
+          },
           parser.AreColumnNamesInFirstLine(tempFileName));
         Assert.AreEqual(6, parser.Rows);
         Assert.AreEqual(4, parser.Columns);
@@ -715,9 +718,12 @@ s,0,0,0");
         TableFileParser parser = new TableFileParser();
         try {
           parser.Parse(tmpFileName,
-            CultureInfo.InvariantCulture.NumberFormat,
-            CultureInfo.InvariantCulture.DateTimeFormat,
-            separator: ',', columnNamesInFirstLine: true);
+            new TableFileFormatOptions {
+              NumberFormat = CultureInfo.InvariantCulture.NumberFormat,
+              DateTimeFormat = CultureInfo.InvariantCulture.DateTimeFormat,
+              ColumnSeparator = ','
+            },
+            columnNamesInFirstLine: true);
           Assert.IsTrue(parser.Values[0] is List<double>);
           Assert.AreEqual(double.NaN, parser.Values[0][0]);
           Assert.AreEqual(3.14, parser.Values[0][1]);
@@ -745,9 +751,12 @@ str,a string --> column is converted to List<string>
         TableFileParser parser = new TableFileParser();
         try {
           parser.Parse(tmpFileName,
-            CultureInfo.InvariantCulture.NumberFormat,
-            CultureInfo.InvariantCulture.DateTimeFormat,
-            separator: ',', columnNamesInFirstLine: true);
+            new TableFileFormatOptions {
+              NumberFormat = CultureInfo.InvariantCulture.NumberFormat,
+              DateTimeFormat = CultureInfo.InvariantCulture.DateTimeFormat,
+              ColumnSeparator = ','
+            },
+            columnNamesInFirstLine: true);
           Assert.IsTrue(parser.Values[0] is List<string>);
           Assert.AreEqual(string.Empty, parser.Values[0][0]);
           Assert.AreEqual("3.14", parser.Values[0][1]);
@@ -776,9 +785,12 @@ str,a string --> column is converted to List<string>
         TableFileParser parser = new TableFileParser();
         try {
           parser.Parse(tmpFileName,
-            CultureInfo.InvariantCulture.NumberFormat,
-            CultureInfo.InvariantCulture.DateTimeFormat,
-            separator: ',', columnNamesInFirstLine: true);
+            new TableFileFormatOptions {
+              NumberFormat = CultureInfo.InvariantCulture.NumberFormat,
+              DateTimeFormat = CultureInfo.InvariantCulture.DateTimeFormat,
+              ColumnSeparator = ','
+            },
+            columnNamesInFirstLine: true);
           Assert.IsTrue(parser.Values[0] is List<string>);
           Assert.AreEqual(string.Empty, parser.Values[0][0]);
           Assert.AreEqual("3.1.2016", parser.Values[0][1]);
@@ -808,9 +820,12 @@ str,a string --> column is converted to List<string>
         TableFileParser parser = new TableFileParser();
         try {
           parser.Parse(tmpFileName,
-            CultureInfo.GetCultureInfo("de-de").NumberFormat,
-            CultureInfo.GetCultureInfo("de-de").DateTimeFormat,
-            separator: ',', columnNamesInFirstLine: true);
+            new TableFileFormatOptions {
+              NumberFormat =  CultureInfo.GetCultureInfo("de-de").NumberFormat,
+              DateTimeFormat = CultureInfo.GetCultureInfo("de-de").DateTimeFormat,
+              ColumnSeparator = ','
+            },
+            columnNamesInFirstLine: true);
           Assert.IsTrue(parser.Values[0] is List<DateTime>);
           Assert.AreEqual(new DateTime(2016, 6, 19), parser.Values[0][0]);
           Assert.AreEqual(new DateTime(2016, 6, 19, 8, 15, 0), parser.Values[0][1]);
@@ -822,9 +837,12 @@ str,a string --> column is converted to List<string>
 ");
 
           parser.Parse(tmpFileName,
-            CultureInfo.InvariantCulture.NumberFormat,
-            CultureInfo.InvariantCulture.DateTimeFormat,
-            separator: ',', columnNamesInFirstLine: true);
+            new TableFileFormatOptions {
+              NumberFormat = CultureInfo.InvariantCulture.NumberFormat,
+              DateTimeFormat = CultureInfo.InvariantCulture.DateTimeFormat,
+              ColumnSeparator = ','
+            },
+            columnNamesInFirstLine: true);
           Assert.IsTrue(parser.Values[0] is List<DateTime>);
           Assert.AreEqual(new DateTime(2016, 6, 19), parser.Values[0][0]);
           Assert.AreEqual(new DateTime(2016, 6, 19, 8, 15, 0), parser.Values[0][1]);
@@ -847,9 +865,12 @@ str,a string --> column is converted to List<string>
         TableFileParser parser = new TableFileParser();
         try {
           parser.Parse(tmpFileName,
-            CultureInfo.InvariantCulture.NumberFormat,
-            CultureInfo.InvariantCulture.DateTimeFormat,
-            separator: ',', columnNamesInFirstLine: true);
+            new TableFileFormatOptions {
+              NumberFormat = CultureInfo.InvariantCulture.NumberFormat,
+              DateTimeFormat = CultureInfo.InvariantCulture.DateTimeFormat,
+              ColumnSeparator = ','
+            },
+            columnNamesInFirstLine: true);
           Assert.IsTrue(parser.Values[0] is List<string>); // time values should be parsed as strings
           Assert.AreEqual("8:15", parser.Values[0][0]);
           Assert.AreEqual("9:40", parser.Values[0][1]);
@@ -883,9 +904,12 @@ str,a string --> column is converted to List<string>
         TableFileParser parser = new TableFileParser();
         try {
           parser.Parse(tmpFileName,
-            CultureInfo.InvariantCulture.NumberFormat,
-            CultureInfo.InvariantCulture.DateTimeFormat,
-            separator: ',', columnNamesInFirstLine: true);
+            new TableFileFormatOptions {
+              NumberFormat = CultureInfo.InvariantCulture.NumberFormat,
+              DateTimeFormat = CultureInfo.InvariantCulture.DateTimeFormat,
+              ColumnSeparator = ','
+            },
+            columnNamesInFirstLine: true);
           // Parse should fail with an exception
           Assert.Fail("expected exception TableFileParser.DataFormatException");
         }
@@ -914,9 +938,12 @@ str,a string --> column is converted to List<string>
         TableFileParser parser = new TableFileParser();
         try {
           parser.Parse(tmpFileName,
-            CultureInfo.InvariantCulture.NumberFormat,
-            CultureInfo.InvariantCulture.DateTimeFormat,
-            separator: ',', columnNamesInFirstLine: true);
+            new TableFileFormatOptions {
+              NumberFormat = CultureInfo.InvariantCulture.NumberFormat,
+              DateTimeFormat = CultureInfo.InvariantCulture.DateTimeFormat,
+              ColumnSeparator = ','
+            },
+            columnNamesInFirstLine: true);
           Assert.IsTrue(parser.Values[0] is List<double>);
           Assert.IsTrue(parser.Values[1] is List<string>);
           Assert.AreEqual(parser.Values[1][0], "3.15");

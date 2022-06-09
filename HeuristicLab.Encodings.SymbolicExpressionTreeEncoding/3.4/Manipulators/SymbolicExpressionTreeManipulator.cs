@@ -45,6 +45,6 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
       return base.InstrumentedApply();
     }
 
-    protected abstract void Manipulate(IRandom random, ISymbolicExpressionTree symbolicExpressionTree);
+    public abstract void Manipulate(IRandom random, ISymbolicExpressionTree symbolicExpressionTree);
   }
 }

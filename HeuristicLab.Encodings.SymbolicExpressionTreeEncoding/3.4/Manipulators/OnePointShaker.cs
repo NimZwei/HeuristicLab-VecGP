@@ -55,7 +55,7 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
       return new OnePointShaker(this, cloner);
     }
 
-    protected override void Manipulate(IRandom random, ISymbolicExpressionTree tree) {
+    public override void Manipulate(IRandom random, ISymbolicExpressionTree tree) {
       OnePointShaker.Shake(random, tree, ShakingFactor);
     }
 

@@ -379,6 +379,8 @@
     <Compile Include="Regression\Vladislavleva\SineCosineFunction.cs" />
     <Compile Include="Regression\Vladislavleva\UnwrappedBallFunctionFiveDimensional.cs" />
     <Compile Include="Regression\Vladislavleva\VladislavlevaInstanceProvider.cs" />
+    <Compile Include="SegmentOptimization\SegmentOptimizationInstanceProvider.cs" />
+    <Compile Include="SegmentOptimization\SOPDataDiscriptor.cs" />
     <Compile Include="TableFileFormatOptions.cs" />
     <Compile Include="TableFileParser.cs" />
     <Compile Include="TimeSeries\CSV\TimeSeriesPrognosisCSVInstanceProvider.cs" />
@@ -454,7 +456,9 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="SegmentOptimization\Data\SOPData.zip" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">set Path=%25Path%25;$(ProjectDir);$(SolutionDir)

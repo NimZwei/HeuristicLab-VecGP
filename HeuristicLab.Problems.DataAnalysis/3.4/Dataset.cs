@@ -190,6 +190,14 @@ namespace HeuristicLab.Problems.DataAnalysis {
         }
         storableData = null;
       }
+
+      // convert List<DoubleVector> to List<double[]>
+      foreach (var kvp in variableValues.ToList()) {
+        if (kvp.Value is IEnumerable<IEnumerable<double>> oldList and not IEnumerable<double[]>) {
+          var newList = oldList.Select(x => x.ToArray()).ToList();
+          variableValues[kvp.Key] = newList;
+        }
+      }
     }
     #endregion
 

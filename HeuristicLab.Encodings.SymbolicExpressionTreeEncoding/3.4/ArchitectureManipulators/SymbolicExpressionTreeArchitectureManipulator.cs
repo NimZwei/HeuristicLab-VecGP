@@ -61,7 +61,7 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
       Parameters.Add(new ValueLookupParameter<IntValue>(MaximumFunctionArgumentsParameterName, "The maximal allowed number of arguments of a automatically defined functions."));
     }
 
-    protected override sealed void Manipulate(IRandom random, ISymbolicExpressionTree symbolicExpressionTree) {
+    public override sealed void Manipulate(IRandom random, ISymbolicExpressionTree symbolicExpressionTree) {
       ModifyArchitecture(random, symbolicExpressionTree, MaximumFunctionDefinitions, MaximumFunctionArguments);
     }
 

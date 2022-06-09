@@ -35,16 +35,20 @@ internal interface IVector {
 }
 
 [Item("Vector", "Stores a generic vector for vector-based data analysis.")]
-[StorableType("E734BF1C-E651-4AE2-AF4C-25ED8D12E6A2")]
+[StorableType("E734BF1C-E651-4AE2-AF4C-25ED8D12E6A2",  
+  /* MathNet.Numeric Vector<T>*/ "9BDA9658-EDBF-4BAD-B988-DCA08C500D7A",
+  /* MathNet.Numeric VectorStorage<T>*/ "4921801B-5A2F-41E4-86AD-E6B548ED2CB7", "8E57A262-299C-46B6-BDA8-DCB726C83FC0", "33724125-E6A4-4E08-9EE4-9508D696E2D9")]
 internal abstract class Vector<T> : IVector, IEquatable<Vector<T>>, IEnumerable<T> where T : struct, IEquatable<T> {
   [Storable]
-  protected readonly T[] values;
+  protected internal readonly T[] values;
 
   public int Length => values.Length;
 
   protected Vector(T[] values) {
     this.values = values;
   }
+  
+  [StorableConstructor] protected Vector(StorableConstructorFlag _) : base() { }
   
   protected void CopySubVectorTo(Vector<T> destination, int sourceIndex, int targetIndex, int count) {
     if (ReferenceEquals(this, destination)) {
@@ -141,7 +145,8 @@ internal abstract class Vector<T> : IVector, IEquatable<Vector<T>>, IEnumerable<
 }
 
 [Item("DoubleVector", "Stores a double vector for vector-based data analysis.")]
-[StorableType("EDC0FBA1-544F-46C3-958B-4FD97491ED6C")]
+[StorableType("EDC0FBA1-544F-46C3-958B-4FD97491ED6C", 
+  /* MathNet.Numerics Vector */ "F20EE6AE-EAC6-4937-BBE7-92955D8C5936", "8E63B5E1-8892-455F-97C2-31B367A21734", "6BDA39FC-1334-4D86-9E88-277E4C33D7F1")]
 internal class DoubleVector : Vector<double> {
 
   public static readonly DoubleVector NaN = new DoubleVector(new[] { double.NaN });
@@ -152,6 +157,8 @@ internal class DoubleVector : Vector<double> {
   : base (values.ToArray()) { 
     if (Length == 0) throw new InvalidOperationException("No empty vectors allowed");
   }
+  
+  [StorableConstructor] protected DoubleVector(StorableConstructorFlag _) : base(_) { }
   
   public override string ToString() {
     return ToString(",", "[", "]", 20);
@@ -412,6 +419,8 @@ internal class BoolVector : Vector<bool> {
     : base(values.ToArray()) {
     if (Length == 0) throw new InvalidOperationException("No empty vectors allowed");
   }
+  
+  [StorableConstructor] protected BoolVector(StorableConstructorFlag _) : base(_) { }
 
   public override string ToString() {
     return ToString(",", "[", "]", 20);
@@ -455,3 +464,77 @@ internal class BoolVector : Vector<bool> {
     return v.All(x => !x);
   }
 }
+
+
+
+#region Old transformer used for MathNet.Numerics vectors
+internal abstract class VectorTransformer<T> : BoxTransformer<Vector<T>> where T : struct, IEquatable<T>, IFormattable {
+
+  public override bool CanTransformType(Type type) {
+    return typeof(Vector<T>).IsAssignableFrom(type);
+  }
+
+  public override Box CreateBox(object o, Mapper mapper) {
+    var box = base.CreateBox(o, mapper);
+    box.Value = new ScalarValueBox();
+    return box;
+  }
+
+  protected override void Populate(Box box, Vector<T> vector, Mapper mapper) {
+    var storageId = mapper.GetBoxId(vector.values);
+    box.Value.ULong = storageId;
+  }
+
+  protected override Vector<T> Extract(Box box, Type type, Mapper mapper) {
+    var storageId = (uint)box.Value.ULong;
+    var @object = mapper.GetObject(storageId);
+    return @object switch {
+      T[] array => Create(array),
+      Vector<T> vector => vector,
+      _ => throw new InvalidOperationException($"Invalid type ({@object.GetType()})")
+    };
+  }
+
+  protected abstract Vector<T> Create(T[] data);
+}
+
+[Transformer("76A21F63-36B4-4073-ABBC-56623ECBF42E", 400)]
+internal class DoubleVectorTransformer : VectorTransformer<double> {
+  protected override Vector<double> Create(double[] data) { return new DoubleVector(data); }
+}
+
+internal abstract class VectorStorageTransformer<T> : BoxTransformer<Vector<T>> where T : struct, IEquatable<T>, IFormattable {
+
+  public override Box CreateBox(object o, Mapper mapper) {
+    var box = base.CreateBox(o, mapper);
+    box.Value = new ScalarValueBox();
+    return box;
+  }
+  
+  protected override void Populate(Box box, Vector<T> storage, Mapper mapper) {
+    var dataId = mapper.GetBoxId(storage.values);
+    box.Value.ULong = dataId;
+  }
+  
+  protected override Vector<T> Extract(Box box, Type type, Mapper mapper) {
+    var dataId = (uint)box.Value.ULong;
+    var data = (T[])mapper.GetObject(dataId);
+    return Create(data);
+  }
+
+  public override void FillFromBox(object obj, Box box, Mapper mapper) {
+    var storage = (Vector<T>)obj;
+    var dataId = (uint)box.Value.ULong;
+    var data = (T[])mapper.GetObject(dataId);
+    Array.Copy(data, storage.values, data.Length);
+  }
+  
+  protected abstract Vector<T> Create(T[] data);
+}
+
+[Transformer("24705F16-FDB8-487A-ABEA-F69D58B50D60", 200)]
+internal class DoubleDenseVectorStorageTransform : VectorStorageTransformer<double> {
+  protected override Vector<double> Create(double[] data) { return new DoubleVector(data); }
+}
+
+#endregion

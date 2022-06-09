@@ -112,6 +112,22 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
     public override IDeepCloneable Clone(Cloner cloner) {
       return new MultiSymbolicExpressionTreeArchitectureManipulator(this, cloner);
     }
+    
+    public void Manipulate(IRandom random, ISymbolicExpressionTree symbolicExpressionTree) {
+      double sum = Operators.CheckedItems.Sum(o => Probabilities[o.Index]);
+      if (sum.IsAlmost(0)) throw new InvalidOperationException(Name + ": All selected operators have zero probability.");
+      double r = random.NextDouble() * sum;
+      sum = 0;
+      int index = -1;
+      foreach (var indexedItem in Operators.CheckedItems) {
+        sum += Probabilities[indexedItem.Index];
+        if (sum > r) {
+          index = indexedItem.Index;
+          break;
+        }
+      }
+      Operators[index].Manipulate(random, symbolicExpressionTree);
+    }
 
     protected override void Operators_ItemsReplaced(object sender, CollectionItemsChangedEventArgs<IndexedItem<ISymbolicExpressionTreeManipulator>> e) {
       base.Operators_ItemsReplaced(sender, e);

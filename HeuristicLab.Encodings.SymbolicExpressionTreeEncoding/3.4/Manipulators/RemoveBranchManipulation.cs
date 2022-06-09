@@ -65,7 +65,7 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
       return new RemoveBranchManipulation(this, cloner);
     }
 
-    protected override void Manipulate(IRandom random, ISymbolicExpressionTree symbolicExpressionTree) {
+    public override void Manipulate(IRandom random, ISymbolicExpressionTree symbolicExpressionTree) {
       RemoveRandomBranch(random, symbolicExpressionTree, MaximumSymbolicExpressionTreeLength.Value, MaximumSymbolicExpressionTreeDepth.Value);
     }
 

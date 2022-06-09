@@ -21,6 +21,7 @@
 
 using HeuristicLab.Optimization;
 using HEAL.Attic;
+using HeuristicLab.Core;
 
 namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
   [StorableType("35d40821-ee75-4212-baf9-4138db862b77")]
@@ -28,5 +29,7 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
   /// Interface for operators that manipulate symbolic expression trees.
   /// </summary>
   public interface ISymbolicExpressionTreeManipulator : ISymbolicExpressionTreeOperator, IManipulator {
+    //ILookupParameter<ISymbolicExpressionTree> ParentParameter { get; }
+    void Manipulate(IRandom random, ISymbolicExpressionTree symbolicExpressionTree);
   }
 }

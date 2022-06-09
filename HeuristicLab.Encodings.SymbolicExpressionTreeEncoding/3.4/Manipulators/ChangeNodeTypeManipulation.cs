@@ -40,7 +40,7 @@ namespace HeuristicLab.Encodings.SymbolicExpressionTreeEncoding {
       return new ChangeNodeTypeManipulation(this, cloner);
     }
 
-    protected override void Manipulate(IRandom random, ISymbolicExpressionTree symbolicExpressionTree) {
+    public override void Manipulate(IRandom random, ISymbolicExpressionTree symbolicExpressionTree) {
       ChangeNodeType(random, symbolicExpressionTree);
     }
 
