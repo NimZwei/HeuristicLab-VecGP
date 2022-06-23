@@ -1321,9 +1321,10 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
         return aggregationNode;
       }
 
-      ISymbolicExpressionTreeNode SimplifyArithmeticOperation(IEnumerable<ISymbolicExpressionTreeNode> terms,
+      ISymbolicExpressionTreeNode SplitAndSimplify(IEnumerable<ISymbolicExpressionTreeNode> terms,
         Func<ISymbolicExpressionTreeNode, ISymbolicExpressionTreeNode, ISymbolicExpressionTreeNode> aggregation,
         VectorSimplifier simplifyTerms) {
+     
         var scalarTerms = terms.Where(IsScalarNode).ToList();
         var remainingTerms = terms.Except(scalarTerms).ToList();
 
@@ -1339,19 +1340,20 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic {
 
       if (IsScalarNode(node)) {
         return simplifyScalar(GetSimplifiedTree(node));
-      } else if (IsAddition(node) || IsSubtraction(node)) {
+      } else if (IsAddition(node)/* || IsSubtraction(node)*/) {
         var terms = node.Subtrees;
         if (IsSubtraction(node)) terms = InvertNodes(terms, Negate);
-        return SimplifyArithmeticOperation(terms, Sum, simplifyAdditiveTerms);
-      } else if (IsMultiplication(node) || IsDivision(node)) {
+        return SplitAndSimplify(terms, Sum, simplifyAdditiveTerms); // ToDo: Adding the inverting node can cause an infinite loop
+      } else if (IsMultiplication(node)/* || IsDivision(node)*/) {
         var factors = node.Subtrees;
-        if (IsDivision(node)) factors = InvertNodes(factors, Invert);
-        return SimplifyArithmeticOperation(factors, Product, simplifyMultiplicativeFactors);
+        if (IsDivision(node)) factors = InvertNodes(factors, Invert); // ToDo: Adding the inverting node can cause an infinite loop
+        return SplitAndSimplify(factors, Product, simplifyMultiplicativeFactors);
       } else if (node is VariableTreeNodeBase variableNode && !variableNode.Weight.IsAlmost(1.0)) { // weight is like multiplication
-        var weight = variableNode.Weight;
-        variableNode.Weight = 1.0;
-        var factors = new[] { variableNode, Number(weight) };
-        return SimplifyArithmeticOperation(factors, Product, simplifyMultiplicativeFactors);
+        var newVariableNode = (VariableTreeNodeBase)variableNode.Clone();
+        var weight = newVariableNode.Weight;
+        newVariableNode.Weight = 1.0;
+        var factors = new[] { newVariableNode, Number(weight) };
+        return SplitAndSimplify(factors, Product, simplifyMultiplicativeFactors);
       } else {
         return MakeAggregationNode(node);
       }

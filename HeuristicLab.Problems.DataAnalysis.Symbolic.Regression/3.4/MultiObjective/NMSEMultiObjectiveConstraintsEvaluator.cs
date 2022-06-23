@@ -90,12 +90,8 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Regression {
       var applyLinearScaling = ApplyLinearScalingParameter.ActualValue.Value;
 
       if (UseParameterOptimization) {
-        SymbolicRegressionParameterOptimizationEvaluator.OptimizeParameters(interpreter, tree, problemData, rows,
-          false,
-          ParameterOptimizationIterations,
-          ParameterOptimizationUpdateVariableWeights,
-          estimationLimits.Lower,
-          estimationLimits.Upper);
+        tree = SymbolicRegressionParameterOptimizationEvaluator.OptimizeParameters(tree, problemData, rows, false, ParameterOptimizationIterations, updateVariableWeights: ParameterOptimizationUpdateVariableWeights);
+        SymbolicExpressionTreeParameter.ActualValue = tree;
       } else {
         if (applyLinearScaling) {
           var rootNode = new ProgramRootSymbol().CreateTreeNode();

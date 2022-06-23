@@ -20,8 +20,10 @@
 #endregion
 
 using System;
+using System.Threading;
 using HeuristicLab.Encodings.SymbolicExpressionTreeEncoding;
 using HeuristicLab.MainForm;
+using HeuristicLab.Problems.DataAnalysis.Symbolic.Vector;
 using HeuristicLab.Problems.DataAnalysis.Symbolic.Views;
 
 namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Regression.Views {
@@ -42,6 +44,8 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Regression.Views {
 
       var tree = Content?.Model?.SymbolicExpressionTree;
       btnOptimizeParameters.Enabled = tree != null && SymbolicRegressionParameterOptimizationEvaluator.CanOptimizeParameters(tree);
+      btnUnrollingVectorOptimizeParameters.Enabled = tree != null && SymbolicRegressionVectorUnrollingParameterOptimizationEvaluator.CanOptimizeParameters(tree);
+
     }
 
     protected override void UpdateModel(ISymbolicExpressionTree tree) {
@@ -50,7 +54,7 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Regression.Views {
       Content.Model = model;
     }
 
-    protected override ISymbolicExpressionTree OptimizeParameters(ISymbolicExpressionTree tree, IProgress progress) {
+    protected override ISymbolicExpressionTree OptimizeParameters(ISymbolicExpressionTree tree, CancellationToken cancellationToken, IProgress progress) {
       const int iterations = 50;
       const int maxRepetitions = 100;
       const double minimumImprovement = 1e-10;
@@ -63,12 +67,57 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Regression.Views {
 
       do {
         prevResult = result;
-        result = SymbolicRegressionParameterOptimizationEvaluator.OptimizeParameters(model.Interpreter, tree, regressionProblemData, regressionProblemData.TrainingIndices,
-          applyLinearScaling: true, maxIterations: iterations, updateVariableWeights: true, lowerEstimationLimit: model.LowerEstimationLimit, upperEstimationLimit: model.UpperEstimationLimit,
-          iterationCallback: (args, func, obj) => {
+        tree = SymbolicRegressionParameterOptimizationEvaluator.OptimizeParameters(
+          tree, 
+          regressionProblemData, regressionProblemData.TrainingIndices,
+          applyLinearScaling: false, maxIterations: iterations, updateVariableWeights: true,
+          cancellationToken: cancellationToken, iterationCallback: (args, func, obj) => {
             double newProgressValue = progress.ProgressValue + (1.0 / (iterations + 2) / maxRepetitions); // (iterations + 2) iterations are reported
             progress.ProgressValue = Math.Min(newProgressValue, 1.0);
+            progress.Message = $"MSE: { func / regressionProblemData.TrainingPartition.Size }";
           });
+        result = SymbolicRegressionSingleObjectivePearsonRSquaredEvaluator.Calculate(
+          tree,
+          regressionProblemData, regressionProblemData.TrainingIndices,
+          model.Interpreter,
+          applyLinearScaling: true, model.LowerEstimationLimit, model.UpperEstimationLimit);
+        reps++;
+        improvement = result - prevResult;
+      } while (improvement > minimumImprovement && reps < maxRepetitions &&
+               progress.ProgressState != ProgressState.StopRequested &&
+               progress.ProgressState != ProgressState.CancelRequested);
+      return tree;
+    }
+    
+    protected override ISymbolicExpressionTree UnrollingVectorOptimizeParameters(ISymbolicExpressionTree tree, CancellationToken cancellationToken, IProgress progress) {
+      const int iterations = 50;
+      const int maxRepetitions = 100;
+      const double minimumImprovement = 1e-10;
+      var regressionProblemData = Content.ProblemData;
+      var model = Content.Model;
+      progress.CanBeStopped = true;
+      double prevResult = 0.0, improvement = 0.0;
+      var result = 0.0;
+      int reps = 0;
+      var interpreter = new VectorTreeInterpreter();
+
+      do {
+        prevResult = result;
+        tree = SymbolicRegressionVectorUnrollingParameterOptimizationEvaluator.OptimizeParameters(
+          tree, interpreter,
+          regressionProblemData,
+          regressionProblemData.TrainingIndices,
+          applyLinearScaling: false, maxIterations: iterations, updateVariableWeights: true,
+          cancellationToken: cancellationToken, iterationCallback: (args, func, obj) => {
+            double newProgressValue = progress.ProgressValue + (1.0 / (iterations + 2) / maxRepetitions); // (iterations + 2) iterations are reported
+            progress.ProgressValue = Math.Min(newProgressValue, 1.0);
+            progress.Message = $"MSE: { func / regressionProblemData.TrainingPartition.Size }";
+          });
+        result = SymbolicRegressionSingleObjectivePearsonRSquaredEvaluator.Calculate(
+          tree,
+          regressionProblemData, regressionProblemData.TrainingIndices,
+          model.Interpreter,
+          applyLinearScaling: true, model.LowerEstimationLimit, model.UpperEstimationLimit);
         reps++;
         improvement = result - prevResult;
       } while (improvement > minimumImprovement && reps < maxRepetitions &&

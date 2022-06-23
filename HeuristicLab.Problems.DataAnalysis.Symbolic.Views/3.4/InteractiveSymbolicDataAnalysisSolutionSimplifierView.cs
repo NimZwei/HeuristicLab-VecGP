@@ -125,16 +125,18 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Views {
 
       if (valid) {
         // check if all variables are contained in the dataset
-        var variables = new HashSet<string>(Content.ProblemData.Dataset.DoubleVariables);
+        var variables = new HashSet<string>(Content.ProblemData.Dataset.VariableNames);
         valid = nodes.OfType<VariableTreeNode>().All(x => variables.Contains(x.VariableName));
       }
 
       if (valid) {
         btnOptimizeParameters.Enabled = true;
+        btnUnrollingVectorOptimizeParameters.Enabled = true;
         btnSimplify.Enabled = true;
         treeStatusValue.Visible = false;
       } else {
         btnOptimizeParameters.Enabled = false;
+        btnUnrollingVectorOptimizeParameters.Enabled = false;
         btnSimplify.Enabled = false;
         treeStatusValue.Visible = true;
       }
@@ -246,7 +248,10 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Views {
 
     protected abstract void UpdateModel(ISymbolicExpressionTree tree);
 
-    protected virtual ISymbolicExpressionTree OptimizeParameters(ISymbolicExpressionTree tree, IProgress progress) {
+    protected virtual ISymbolicExpressionTree OptimizeParameters(ISymbolicExpressionTree tree, CancellationToken cancellationToken, IProgress progress) {
+      return tree;
+    }
+    protected virtual ISymbolicExpressionTree UnrollingVectorOptimizeParameters(ISymbolicExpressionTree tree, CancellationToken cancellationToken, IProgress progress) {
       return tree;
     }
 
@@ -345,7 +350,24 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Views {
       try {
         var tree = (ISymbolicExpressionTree)Content.Model.SymbolicExpressionTree.Clone();
 
-        var newTree = await Task.Run(() => OptimizeParameters(tree, progress));
+        var newTree = await Task.Run(() => OptimizeParameters(tree,  cancellationTokenSource.Token, progress));
+        try {
+          await Task.Delay(300, cancellationTokenSource.Token); // wait for progressbar to finish animation
+        } catch (OperationCanceledException) { }
+        UpdateModel(newTree); // triggers progress.Finish after calculating the node impacts when model is changed
+      } catch {
+        progress.Finish();
+      }
+    }
+    
+    private async void btnUnrollingVectorOptimizeParameters_Click(object sender, EventArgs e) {
+      progress.Start("Optimizing Constants ...");
+      cancellationTokenSource = new CancellationTokenSource();
+      progress.CanBeStopped = true;
+      try {
+        var tree = (ISymbolicExpressionTree)Content.Model.SymbolicExpressionTree.Clone();
+
+        var newTree = await Task.Run(() => UnrollingVectorOptimizeParameters(tree, cancellationTokenSource.Token, progress), cancellationTokenSource.Token);
         try {
           await Task.Delay(300, cancellationTokenSource.Token); // wait for progressbar to finish animation
         } catch (OperationCanceledException) { }

@@ -30,7 +30,7 @@ using HeuristicLab.Core;
 namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Vector;
 
 [StorableType("53926D41-3FCE-4A7C-810C-10758774B575")]
-internal interface IVector {
+public interface IVector {
   public int Length { get; }
 }
 
@@ -38,7 +38,7 @@ internal interface IVector {
 [StorableType("E734BF1C-E651-4AE2-AF4C-25ED8D12E6A2",  
   /* MathNet.Numeric Vector<T>*/ "9BDA9658-EDBF-4BAD-B988-DCA08C500D7A",
   /* MathNet.Numeric VectorStorage<T>*/ "4921801B-5A2F-41E4-86AD-E6B548ED2CB7", "8E57A262-299C-46B6-BDA8-DCB726C83FC0", "33724125-E6A4-4E08-9EE4-9508D696E2D9")]
-internal abstract class Vector<T> : IVector, IEquatable<Vector<T>>, IEnumerable<T> where T : struct, IEquatable<T> {
+public abstract class Vector<T> : IVector, IEquatable<Vector<T>>, IEnumerable<T> where T : struct, IEquatable<T> {
   [Storable]
   protected internal readonly T[] values;
 
@@ -147,7 +147,7 @@ internal abstract class Vector<T> : IVector, IEquatable<Vector<T>>, IEnumerable<
 [Item("DoubleVector", "Stores a double vector for vector-based data analysis.")]
 [StorableType("EDC0FBA1-544F-46C3-958B-4FD97491ED6C", 
   /* MathNet.Numerics Vector */ "F20EE6AE-EAC6-4937-BBE7-92955D8C5936", "8E63B5E1-8892-455F-97C2-31B367A21734", "6BDA39FC-1334-4D86-9E88-277E4C33D7F1")]
-internal class DoubleVector : Vector<double> {
+public class DoubleVector : Vector<double> {
 
   public static readonly DoubleVector NaN = new DoubleVector(new[] { double.NaN });
 
@@ -414,7 +414,7 @@ internal class DoubleVector : Vector<double> {
 
 [Item("BoolVector", "Stores a bool vector for vector-based data analysis.")]
 [StorableType("68B9992A-5370-4BF1-B38E-7B1F206500EF")]
-internal class BoolVector : Vector<bool> {
+public class BoolVector : Vector<bool> {
   public BoolVector(IEnumerable<bool> values)  // clone
     : base(values.ToArray()) {
     if (Length == 0) throw new InvalidOperationException("No empty vectors allowed");

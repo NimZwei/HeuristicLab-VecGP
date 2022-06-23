@@ -54,6 +54,7 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Views {
       this.flowLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
       this.btnSimplify = new System.Windows.Forms.Button();
       this.btnOptimizeParameters = new System.Windows.Forms.Button();
+      this.btnUnrollingVectorOptimizeParameters = new System.Windows.Forms.Button();
       this.grpViewHost = new System.Windows.Forms.GroupBox();
       this.treeChart = new HeuristicLab.Problems.DataAnalysis.Symbolic.Views.InteractiveSymbolicExpressionTreeChart();
       this.toolTip = new System.Windows.Forms.ToolTip(this.components);
@@ -132,6 +133,8 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Views {
             | System.Windows.Forms.AnchorStyles.Right)));
       this.flowLayoutPanel.Controls.Add(this.btnSimplify);
       this.flowLayoutPanel.Controls.Add(this.btnOptimizeParameters);
+      this.flowLayoutPanel.Controls.Add(this.btnUnrollingVectorOptimizeParameters);
+
       this.flowLayoutPanel.Location = new System.Drawing.Point(6, 370);
       this.flowLayoutPanel.Name = "flowLayoutPanel";
       this.flowLayoutPanel.Size = new System.Drawing.Size(204, 29);
@@ -167,6 +170,20 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Views {
         "imization is stopped.");
       this.btnOptimizeParameters.UseVisualStyleBackColor = true;
       this.btnOptimizeParameters.Click += new System.EventHandler(this.btnOptimizeParameters_Click);
+      // 
+      // btnUnrollingVectorOptimizeParameters
+      // 
+      this.btnUnrollingVectorOptimizeParameters.AutoSize = true;
+      this.btnUnrollingVectorOptimizeParameters.Enabled = false;
+      this.btnUnrollingVectorOptimizeParameters.Image = HeuristicLab.Common.Resources.VSImageLibrary.Performance;
+      this.btnUnrollingVectorOptimizeParameters.Location = new System.Drawing.Point(175, 3);
+      this.btnUnrollingVectorOptimizeParameters.Name = "btnUnrollingVectorOptimizeParameters";
+      this.btnUnrollingVectorOptimizeParameters.Size = new System.Drawing.Size(107, 24);
+      this.btnUnrollingVectorOptimizeParameters.TabIndex = 3;
+      this.btnUnrollingVectorOptimizeParameters.Text = "Unrolled-Vector-Optimize";
+      this.btnUnrollingVectorOptimizeParameters.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+      this.btnUnrollingVectorOptimizeParameters.UseVisualStyleBackColor = true;
+      this.btnUnrollingVectorOptimizeParameters.Click += new System.EventHandler(this.btnUnrollingVectorOptimizeParameters_Click);
       // 
       // grpViewHost
       // 
@@ -228,6 +245,7 @@ namespace HeuristicLab.Problems.DataAnalysis.Symbolic.Views {
     private System.Windows.Forms.Button btnSimplify;
     private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel;
     protected System.Windows.Forms.Button btnOptimizeParameters;
+    protected System.Windows.Forms.Button btnUnrollingVectorOptimizeParameters;
     private System.Windows.Forms.Label treeStatusValue;
     private System.Windows.Forms.ToolTip toolTip;
   }

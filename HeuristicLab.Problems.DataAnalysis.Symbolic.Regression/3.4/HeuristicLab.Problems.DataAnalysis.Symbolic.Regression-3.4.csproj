@@ -135,6 +135,8 @@
     <Compile Include="ParameterOptimization.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="ShapeConstraintsAnalyzer.cs" />
+    <Compile Include="SingleObjective\Evaluators\SymbolicRegressionParameterOptimizationEvaluatorBase.cs" />
+    <Compile Include="SingleObjective\Evaluators\SymbolicRegressionVectorUnrollingParameterOptimizationEvaluator.cs" />
     <Compile Include="SingleObjective\ParameterOptimizationAnalyzer.cs" />
     <Compile Include="SingleObjective\Evaluators\NMSESingleObjectiveConstraintsEvaluator.cs" />
     <Compile Include="SingleObjective\Evaluators\SymbolicRegressionMeanRelativeErrorEvaluator.cs" />

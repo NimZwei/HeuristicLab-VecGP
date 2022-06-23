@@ -278,10 +278,8 @@ namespace HeuristicLab.Algorithms.DataAnalysis {
       }
       var interpreter = new SymbolicDataAnalysisExpressionTreeLinearInterpreter();
 
-      SymbolicRegressionParameterOptimizationEvaluator.OptimizeParameters(interpreter, tree, problemData, problemData.TrainingIndices,
-        applyLinearScaling: applyLinearScaling, maxIterations: maxIterations,
-        updateVariableWeights: false, updateParametersInTree: true);
-
+      tree = SymbolicRegressionParameterOptimizationEvaluator.OptimizeParameters(tree, problemData, problemData.TrainingIndices, applyLinearScaling, maxIterations, updateVariableWeights: false);
+      
       var model = new SymbolicRegressionModel(problemData.TargetVariable, tree, (ISymbolicDataAnalysisExpressionTreeInterpreter)interpreter.Clone());
       if (applyLinearScaling)
         model.Scale(problemData);

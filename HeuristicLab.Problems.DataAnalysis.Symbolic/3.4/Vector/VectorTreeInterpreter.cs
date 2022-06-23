@@ -236,13 +236,26 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
 
     foreach (var rowEnum in rows) {
       int row = rowEnum;
-      var result = Evaluate(dataset, ref row, state);
+      var result = Evaluate(dataset, ref row, state, traceDict: null);
       if (result.IsScalar)
         yield return result.Scalar;
       else if (result.IsVector) {
         yield return Aggregate(FinalAggregation, result.Vector);
       } else
         yield return double.NaN;
+      state.Reset();
+    }
+  }
+  
+  public IEnumerable<Dictionary<ISymbolicExpressionTreeNode, EvaluationResult>> GetIntermediateNodeValues(ISymbolicExpressionTree tree, IDataset dataset, IEnumerable<int> rows) {
+    var state = PrepareInterpreterState(tree, dataset);
+
+    foreach (var rowEnum in rows) {
+      int row = rowEnum;
+      var traceDict = new Dictionary<ISymbolicExpressionTreeNode, EvaluationResult>();
+      var result = Evaluate(dataset, ref row, state, traceDict);
+      traceDict.Add(tree.Root.GetSubtree(0), result); // Add StartSymbol
+      yield return traceDict;
       state.Reset();
     }
   }
@@ -288,7 +301,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
     return new InterpreterState(code, necessaryArgStackSize);
   }
 
-  internal readonly struct EvaluationResult {
+  public readonly struct EvaluationResult {
     private enum Type {
       Scalar, Vector, Undefined
     }
@@ -411,14 +424,20 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
     return typeof(double);
   }
 
-  internal virtual EvaluationResult Evaluate(IDataset dataset, ref int row, InterpreterState state) {
+  internal virtual EvaluationResult Evaluate(IDataset dataset, ref int row, InterpreterState state,
+    IDictionary<ISymbolicExpressionTreeNode, EvaluationResult> traceDict) {
+    
+    EvaluationResult TraceAndReturnEvaluation(Instruction instr, EvaluationResult result) {
+      traceDict?.Add(instr.dynamicNode, result);
+      return result;
+    }
 
     Instruction currentInstr = state.NextInstruction();
     switch (currentInstr.opCode) {
       case OpCodes.Add: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         for (int i = 1; i < currentInstr.nArguments; i++) {
-          var op = Evaluate(dataset, ref row, state);
+          var op = Evaluate(dataset, ref row, state, traceDict);
           cur = ArithmeticApply(cur, op,
             (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs, 0.0),
             (s1, s2) => s1 + s2,
@@ -426,12 +445,12 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
             (v1, s2) => v1 + s2,
             (v1, v2) => v1 + v2);
         }
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Sub: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         for (int i = 1; i < currentInstr.nArguments; i++) {
-          var op = Evaluate(dataset, ref row, state);
+          var op = Evaluate(dataset, ref row, state, traceDict);
           cur = ArithmeticApply(cur, op,
             (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs, 0.0),
             (s1, s2) => s1 - s2,
@@ -443,12 +462,12 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           cur = FunctionApply(cur,
             s => -s,
             v => -v);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Mul: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         for (int i = 1; i < currentInstr.nArguments; i++) {
-          var op = Evaluate(dataset, ref row, state);
+          var op = Evaluate(dataset, ref row, state, traceDict);
           cur = ArithmeticApply(cur, op,
             (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs, 1.0),
             (s1, s2) => s1 * s2,
@@ -456,12 +475,12 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
             (v1, s2) => v1 * s2,
             (v1, v2) => v1 * v2);
         }
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Div: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         for (int i = 1; i < currentInstr.nArguments; i++) {
-          var op = Evaluate(dataset, ref row, state);
+          var op = Evaluate(dataset, ref row, state, traceDict);
           cur = ArithmeticApply(cur, op,
             (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs, 1.0),
             (s1, s2) => s1 / s2,
@@ -473,50 +492,50 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           cur = FunctionApply(cur,
             s => 1 / s,
             v => 1 / v);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Absolute: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = FunctionApply(cur, Math.Abs, DoubleVector.Abs);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Tanh: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = FunctionApply(cur, Math.Tanh, DoubleVector.Tanh);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Cos: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = FunctionApply(cur, Math.Cos, DoubleVector.Cos);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Sin: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = FunctionApply(cur, Math.Sin, DoubleVector.Sin);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Tan: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = FunctionApply(cur, Math.Tan, DoubleVector.Tan);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Square: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = FunctionApply(cur,
           s => s * s,
           v => v * v);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Cube: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = FunctionApply(cur,
           s => s * s * s,
           v => v * v * v);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Power: {
-        var x = Evaluate(dataset, ref row, state);
-        var y = Evaluate(dataset, ref row, state);
+        var x = Evaluate(dataset, ref row, state, traceDict);
+        var y = Evaluate(dataset, ref row, state, traceDict);
         var cur = ArithmeticApply(x, y,
           (lhs, rhs) => lhs.Length < rhs.Length
             ? CutLonger(lhs, rhs)
@@ -525,25 +544,25 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           (s1, v2) => DoubleVector.Pow(s1, DoubleVector.Round(v2)),
           (v1, s2) => DoubleVector.Pow(v1, Math.Round(s2)),
           (v1, v2) => DoubleVector.Pow(v1, DoubleVector.Round(v2)));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.SquareRoot: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = FunctionApply(cur,
           s => Math.Sqrt(s),
           v => DoubleVector.Sqrt(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.CubeRoot: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = FunctionApply(cur,
           s => s < 0.0 ? -Math.Pow(-s, 1.0 / 3.0) : Math.Pow(s, 1.0 / 3.0),
           v => DoubleVector.Sign(v) * DoubleVector.Pow(v * DoubleVector.Sign(v), 1.0 / 3.0));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Root: {
-        var x = Evaluate(dataset, ref row, state);
-        var y = Evaluate(dataset, ref row, state);
+        var x = Evaluate(dataset, ref row, state, traceDict);
+        var y = Evaluate(dataset, ref row, state, traceDict);
         var cur = ArithmeticApply(x, y,
           (lhs, rhs) => lhs.Length < rhs.Length
             ? CutLonger(lhs, rhs)
@@ -552,33 +571,33 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
           (s1, v2) => DoubleVector.Root(s1, DoubleVector.Round(v2)),
           (v1, s2) => DoubleVector.Root(v1, Math.Round(s2)),
           (v1, v2) => DoubleVector.Root(v1, DoubleVector.Round(v2)));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Exp: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = FunctionApply(cur,
           s => Math.Exp(s),
           v => DoubleVector.Exp(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Log: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = FunctionApply(cur,
           s => Math.Log(s),
           v => DoubleVector.Log(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Variable: {
         if (row < 0 || row >= dataset.Rows) return EvaluationResult.Undefined;
         var variableTreeNode = (VariableTreeNode)currentInstr.dynamicNode;
         if (currentInstr.data is IList<double> doubleList) {
           var cur = new EvaluationResult(doubleList[row] * variableTreeNode.Weight);
-          return cur;
+          return TraceAndReturnEvaluation(currentInstr, cur);
         }
         if (currentInstr.data is IList<double[]> doubleVectorList) {
           var vector = new DoubleVector(doubleVectorList[row]);
           var cur = new EvaluationResult(vector * variableTreeNode.Weight);
-          return cur;
+          return TraceAndReturnEvaluation(currentInstr, cur);
         }
         throw new NotSupportedException($"Unsupported type of variable: {currentInstr.data.GetType().GetPrettyName()}");
       }
@@ -586,173 +605,173 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
         if (row < 0 || row >= dataset.Rows) return EvaluationResult.Undefined;
         var factorVarTreeNode = currentInstr.dynamicNode as BinaryFactorVariableTreeNode;
         var cur = new EvaluationResult(((IList<string>)currentInstr.data)[row] == factorVarTreeNode.VariableValue ? factorVarTreeNode.Weight : 0);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.FactorVariable: {
         if (row < 0 || row >= dataset.Rows) return EvaluationResult.Undefined;
         var factorVarTreeNode = currentInstr.dynamicNode as FactorVariableTreeNode;
         var cur = new EvaluationResult(factorVarTreeNode.GetValue(((IList<string>)currentInstr.data)[row]));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case OpCodes.Constant:
       case OpCodes.Number: {
         var constTreeNode = (NumberTreeNode)currentInstr.dynamicNode;
         var cur = new EvaluationResult(constTreeNode.Value);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       
       // Vector Statistics
       case VectorOpCodes.Mean: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => s,
           v => DoubleVector.Mean(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.Median: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => s,
           v => DoubleVector.Median(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.Min: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => s,
           v => DoubleVector.Min(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.Max: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => s,
           v => DoubleVector.Max(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.Quantile: {
-        var cur = Evaluate(dataset, ref row, state);
-        var q = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
+        var q = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => s,
           v => DoubleVector.Quantile(v, LimitTo(q.Scalar, 0.0, 1.0)));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.StandardDeviation: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => DoubleVector.StandardDeviation(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.MeanDeviation: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => DoubleVector.MeanAbsoluteDeviation(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.InterquartileRange: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => DoubleVector.IQR(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.Variance: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => DoubleVector.Variance(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.Skewness: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => DoubleVector.Skewness(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.Kurtosis: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => DoubleVector.Kurtosis(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.Length: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 1,
           v => v.Length);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.Sum: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => s,
           v => DoubleVector.Sum(v));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       // Vector Comparisons
       case VectorOpCodes.EuclideanDistance: {
-        var x1 = Evaluate(dataset, ref row, state);
-        var x2 = Evaluate(dataset, ref row, state);
+        var x1 = Evaluate(dataset, ref row, state, traceDict);
+        var x2 = Evaluate(dataset, ref row, state, traceDict);
         var cur = AggregateMultipleApply(x1, x2,
           (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs),
           (s1, s2) => Math.Sqrt(Math.Pow(s1 - s2, 2)),
           (s1, v2) => DoubleVector.EuclideanDistance(s1, v2),
           (v1, s2) => DoubleVector.EuclideanDistance(v1, s2),
           (v1, v2) => DoubleVector.EuclideanDistance(v1, v2));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.Covariance: {
-        var x1 = Evaluate(dataset, ref row, state);
-        var x2 = Evaluate(dataset, ref row, state);
+        var x1 = Evaluate(dataset, ref row, state, traceDict);
+        var x2 = Evaluate(dataset, ref row, state, traceDict);
         var cur = AggregateMultipleApply(x1, x2,
           (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs),
           (s1, s2) => 0,
           (s1, v2) => 0,
           (v1, s2) => 0,
           (v1, v2) => DoubleVector.Covariance(v1, v2));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.PearsonCorrelationCoefficient: {
-        var x1 = Evaluate(dataset, ref row, state);
-        var x2 = Evaluate(dataset, ref row, state);
+        var x1 = Evaluate(dataset, ref row, state, traceDict);
+        var x2 = Evaluate(dataset, ref row, state, traceDict);
         var cur = AggregateMultipleApply(x1, x2,
           (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs),
           (s1, s2) => 0,
           (s1, v2) => 0,
           (v1, s2) => 0,
           (v1, v2) => DoubleVector.PearsonCorrelation(v1, v2));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.SpearmanRankCorrelationCoefficient: {
-        var x1 = Evaluate(dataset, ref row, state);
-        var x2 = Evaluate(dataset, ref row, state);
+        var x1 = Evaluate(dataset, ref row, state, traceDict);
+        var x2 = Evaluate(dataset, ref row, state, traceDict);
         var cur = AggregateMultipleApply(x1, x2,
           (lhs, rhs) => ApplyVectorLengthStrategy(DifferentVectorLengthStrategy, lhs, rhs),
           (s1, s2) => 0,
           (s1, v2) => 0,
           (v1, s2) => 0,
           (v1, v2) => DoubleVector.SpearmanRankCorrelation(v1, v2));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       // Distribution Characteristics
       case VectorOpCodes.AbsoluteEnergy: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => s * s,
           v => DoubleVector.Sum(v ^ 2.0));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.AugmentedDickeyFullerTestStatistic: {
         throw new NotImplementedException();
       }
       case VectorOpCodes.BinnedEntropy: {
-        var cur = Evaluate(dataset, ref row, state);
-        var m = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
+        var m = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => {
@@ -770,149 +789,149 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
             }
             return sum;
           });
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.HasLargeStandardDeviation: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => DoubleVector.StandardDeviation(v) > (DoubleVector.Max(v) - DoubleVector.Min(v)) / 2 ? 1.0 : 0.0);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.HasVarianceLargerThanStdDev: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => DoubleVector.Variance(v) > DoubleVector.StandardDeviation(v) ? 1.0 : 0.0);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.IsSymmetricLooking: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 1,
           v => Math.Abs(DoubleVector.Mean(v) - DoubleVector.Median(v)) < (DoubleVector.Max(v) - DoubleVector.Min(v)) / 2 ? 1.0 : 0.0);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.MassQuantile: {
         throw new NotImplementedException();
       }
       case VectorOpCodes.NumberDataPointsAboveMean: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => {
             double mean = DoubleVector.Mean(v);
             return DoubleVector.Sum(v > mean);
           });
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.NumberDataPointsBelowMean: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => {
             double mean = DoubleVector.Mean(v);
             return DoubleVector.Sum(v < mean);
           });
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       // Time Series Dynamics
       case VectorOpCodes.FirstIndexMax: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => (double)DoubleVector.MaxIndex(v) / v.Length);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.FirstIndexMin: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => (double)DoubleVector.MinIndex(v) / v.Length);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.LastIndexMax: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => (double)(v.Length - DoubleVector.MaxIndex(DoubleVector.Reverse(v)) / v.Length));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.LastIndexMin: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => (double)(v.Length - DoubleVector.MinIndex(DoubleVector.Reverse(v)) / v.Length));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.LongestStrikeAboveMean: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => LongestStrikeAbove(v, DoubleVector.Mean(v)));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.LongestStrikeAboveMedian: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => LongestStrikeAbove(v, DoubleVector.Median(v)));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.LongestStrikeBelowMean: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => LongestStrikeBelow(v, DoubleVector.Mean(v)));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.LongestStrikeBelowMedian: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => LongestStrikeBelow(v, DoubleVector.Median(v)));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.LongestStrikePositive: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => s > 0 ? 1 : 0,
           v => LongestStrikeAbove(v, 0));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.LongestStrikeNegative: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => s < 0 ? 1 : 0,
           v => LongestStrikeAbove(v, 0));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.LongestStrikeZero: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => s == 0.0 ? 1 : 0,
           v => LongestStrikeEqual(v, 0));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.NumberPeaksOfSize: {
-        var cur = Evaluate(dataset, ref row, state);
-        var l = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
+        var l = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => CountNumberOfPeaks(v, LimitTo(l.Scalar, 1, v.Length)));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.LargeNumberOfPeaks: {
-        var cur = Evaluate(dataset, ref row, state);
-        var l = Evaluate(dataset, ref row, state);
-        var m = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
+        var l = Evaluate(dataset, ref row, state, traceDict);
+        var m = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => CountNumberOfPeaks(v, LimitTo(l.Scalar, 1, v.Length)) > m.Scalar ? 1.0 : 0.0);
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.MeanAbsoluteChange: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => {
@@ -922,12 +941,12 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
             }
             return sum / v.Length;
           });
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.MeanAbsoluteChangeQuantiles: {
-        var cur = Evaluate(dataset, ref row, state);
-        var ql = Evaluate(dataset, ref row, state);
-        var qu = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
+        var ql = Evaluate(dataset, ref row, state, traceDict);
+        var qu = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => {
@@ -945,11 +964,11 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
 
             return sum / count;
           });
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.LaggedAutocorrelation: {
-        var cur = Evaluate(dataset, ref row, state);
-        var lVal = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
+        var lVal = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => {
@@ -962,10 +981,10 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
 
             return sum / DoubleVector.Variance(v);
           });
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.MeanAutocorrelation: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => {
@@ -979,10 +998,10 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
 
             return sum / (v.Length - 1) / DoubleVector.Variance(v);
           });
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.MeanSecondDerivativeCentral: {
-        var cur = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => {
@@ -993,34 +1012,34 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
 
             return sum / (v.Length - 2);
           });
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
 
       case VectorOpCodes.ArimaModelCoefficients: {
-        var cur = Evaluate(dataset, ref row, state);
-        var i = Evaluate(dataset, ref row, state);
-        var k = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
+        var i = Evaluate(dataset, ref row, state, traceDict);
+        var k = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => throw new NotImplementedException(""));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.ContinuousWaveletTransformationCoefficients: {
-        var cur = Evaluate(dataset, ref row, state);
-        var a = Evaluate(dataset, ref row, state);
-        var b = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
+        var a = Evaluate(dataset, ref row, state, traceDict);
+        var b = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => throw new NotImplementedException(""));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.FastFourierTransformationCoefficient: {
-        var cur = Evaluate(dataset, ref row, state);
-        var k = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
+        var k = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => throw new NotImplementedException(""));
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.NumberContinuousWaveletTransformationPeaksOfSize: {
         throw new NotImplementedException();
@@ -1029,8 +1048,8 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
         throw new NotImplementedException();
       }
       case VectorOpCodes.TimeReversalAsymmetryStatistic: {
-        var cur = Evaluate(dataset, ref row, state);
-        var l = Evaluate(dataset, ref row, state);
+        var cur = Evaluate(dataset, ref row, state, traceDict);
+        var l = Evaluate(dataset, ref row, state, traceDict);
         cur = AggregateApply(cur,
           s => 0,
           v => {
@@ -1041,24 +1060,25 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
             }
             return sum / (v.Length - 2 * lag);
           });
-        return cur;
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       // Vector Manipulations
       case VectorOpCodes.SubVector: {
-        var cur = Evaluate(dataset, ref row, state);
-        return FunctionApply(cur,
+        var cur = Evaluate(dataset, ref row, state, traceDict);
+        cur = FunctionApply(cur,
           s => s,
           v => {
             var node = (WindowedSymbolTreeNode)currentInstr.dynamicNode;
             var (startIdx, endIdx) = GetIndices(node, v);
             return DoubleVector.SubVector(v, startIdx, endIdx, node.Symbol.AllowRoundTrip);
           });
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       case VectorOpCodes.SubVectorSubtree: {
-        var cur = Evaluate(dataset, ref row, state);
-        var start = Evaluate(dataset, ref row, state);
-        var end = Evaluate(dataset, ref row, state);
-        return FunctionApply(cur,
+        var cur = Evaluate(dataset, ref row, state, traceDict);
+        var start = Evaluate(dataset, ref row, state, traceDict);
+        var end = Evaluate(dataset, ref row, state, traceDict);
+        cur = FunctionApply(cur,
           s => s,
           v => {
             const bool allowRoundTrip = false;
@@ -1066,6 +1086,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
             return DoubleVector.SubVector(v, startIdx, endIdx, allowRoundTrip);
           }
         );
+        return TraceAndReturnEvaluation(currentInstr, cur);
       }
       
       default:
