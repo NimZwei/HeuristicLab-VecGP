@@ -197,6 +197,7 @@
     <Compile Include="Mutators\SegmentOptimization\SegmentOptimizationMutator.cs" />
     <Compile Include="Mutators\SubVectorImprovementManipulator.cs" />
     <Compile Include="Mutators\SymbolicDataAnalysisExpressionManipulator.cs" />
+    <Compile Include="SegmentOptimization\ContinuousSegmentOptimizationProblem.cs" />
     <Compile Include="SegmentOptimization\SegmentOptimizationProblem.cs" />
     <Compile Include="Selectors\DiversitySelector.cs" />
     <Compile Include="StructureTemplate\StructureTemplate.cs" />
@@ -425,6 +426,10 @@
       <Project>{ddfb14dd-2a85-493c-a52d-e69729bbaeb0}</Project>
       <Name>HeuristicLab.Encodings.IntegerVectorEncoding-3.3</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\HeuristicLab.Encodings.RealVectorEncoding\3.3\HeuristicLab.Encodings.RealVectorEncoding-3.3.csproj">
+      <Project>{bb6d334a-4bb6-4674-9883-31a6ebb32cab}</Project>
+      <Name>HeuristicLab.Encodings.RealVectorEncoding-3.3</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\HeuristicLab.Encodings.SymbolicExpressionTreeEncoding\3.4\HeuristicLab.Encodings.SymbolicExpressionTreeEncoding-3.4.csproj">
       <Project>{06D4A186-9319-48A0-BADE-A2058D462EEA}</Project>
       <Name>HeuristicLab.Encodings.SymbolicExpressionTreeEncoding-3.4</Name>
@@ -468,6 +473,10 @@
       <Project>{3540E29E-4793-49E7-8EE2-FEA7F61C3994}</Project>
       <Name>HeuristicLab.Problems.Instances-3.3</Name>
       <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\HeuristicLab.Problems.TestFunctions\3.3\HeuristicLab.Problems.TestFunctions-3.3.csproj">
+      <Project>{88b9b0e3-344e-4196-82a3-0f9732506fe8}</Project>
+      <Name>HeuristicLab.Problems.TestFunctions-3.3</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\HeuristicLab.Random\3.3\HeuristicLab.Random-3.3.csproj">
       <Project>{F4539FB6-4708-40C9-BE64-0A1390AEA197}</Project>

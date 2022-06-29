@@ -28,8 +28,10 @@ public class SOPData {
   public string Name { get; set; }
   public string Description { get; set; }
 
-  public double[,] Data { get; set; } 
-  public int Upper { get; set; }
-  public int Lower { get; set; }
+  public double[,] Data { get; set; }
+  
+  public int Lower { get; set; } // incl lower
+  public int Upper { get; set; } // excl upper
+  
   public string Aggregation { get; set; } // mean, sum, std
 }
