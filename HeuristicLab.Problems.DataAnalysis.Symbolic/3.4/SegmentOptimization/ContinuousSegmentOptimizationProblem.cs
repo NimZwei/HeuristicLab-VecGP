@@ -131,46 +131,68 @@ public class ContinuousSegmentOptimizationProblem : SingleObjectiveBasicProblem<
 
   public static double Evaluate(RealVector solution, DoubleMatrix data, DoubleRange knownBounds, Aggregation aggregation) {
     var bounds = new DoubleRange(solution.Min(), solution.Max());
-    double target = BoundedAggregation(data, knownBounds, aggregation);
-    double prediction = BoundedAggregation(data, bounds, aggregation);
-    return Math.Pow(target - prediction, 2);
+    //double target = BoundedAggregation(data, knownBounds, aggregation);
+    //double prediction = BoundedAggregation(data, bounds, aggregation);
+    //return Math.Pow(target - prediction, 2);
+    double[] targets = BoundedAggregation(data, knownBounds, aggregation);
+    double[] predictions = BoundedAggregation(data, bounds, aggregation);
+    var diffs = Enumerable.Zip(targets, predictions, (t, p) => t - p);
+
+    var mse = diffs.Select(d => d * d).Average();
+
+    return mse;
   }
 
   public override void Analyze(Individual[] individuals, double[] qualities, ResultCollection results, IRandom random) {
     var orderedIndividuals = individuals.Zip(qualities, (i, q) => new { Individual = i, Quality = q })
       .OrderBy(z => z.Quality);
+    var bestQuality = Maximization ? orderedIndividuals.Last().Quality : orderedIndividuals.First().Quality;
     var best = Maximization
       ? orderedIndividuals.Last().Individual.RealVector(Encoding.Name)
       : orderedIndividuals.First().Individual.RealVector(Encoding.Name);
 
+    
+    if (results.TryGetValue("Best Quality", out var currentBestQualityResult)) {
+      double currentBestQuality = ((DoubleValue)currentBestQualityResult.Value).Value;
+      bool isBetter = Maximization ? bestQuality > currentBestQuality : bestQuality < currentBestQuality;
+      if (!isBetter) return;
+    }
+    
     var bounds = new DoubleRange(best.Min(), best.Max());
 
     var data = DataParameter.Value;
     var knownBounds = KnownBoundsParameter.Value;
     var aggregation = aggregationParameter.Value.Value;
 
-    double target = BoundedAggregation(data, knownBounds, aggregation);
-    double prediction = BoundedAggregation(data, bounds, aggregation);
-    double diff = target - prediction;
+    double[] targets = BoundedAggregation(data, knownBounds, aggregation);
+    double[] predictions = BoundedAggregation(data, bounds, aggregation);
+    var diffs = Enumerable.Zip(targets, predictions, (t, p) => t - p);
 
-    if (results.TryGetValue("AggValue Diff", out var oldDiffResult)) {
-      var oldDiff = (DoubleValue)oldDiffResult.Value;
-      if (Math.Abs(oldDiff.Value) < Math.Abs(diff)) return;
-    }
+    var mse = diffs.Select(d => d * d).Average();
+    var mae = diffs.Select(d => Math.Abs(d)).Average();
 
+    // if (results.TryGetValue("AggValue Diff", out var oldDiffResult)) {
+    //   var oldDiff = (DoubleValue)oldDiffResult.Value;
+    //   if (Math.Abs(oldDiff.Value) < Math.Abs(diff)) return;
+    // }
+    //
+    //
+    
     results.AddOrUpdateResult("Bounds", bounds);
+    results.AddOrUpdateResult("Best Solution", bounds);
+    results.AddOrUpdateResult("Best Quality", new DoubleValue(bestQuality));
 
-    results.AddOrUpdateResult("AggValue Diff", new DoubleValue(diff));
-    results.AddOrUpdateResult("AggValue Squared Diff", new DoubleValue(Math.Pow(diff, 2)));
+    results.AddOrUpdateResult("Best Solution Diff", new DoubleValue(mae));
+    results.AddOrUpdateResult("Best Solution Squared Diff", new DoubleValue(mse));
 
-    results.AddOrUpdateResult("Lower Diff", new DoubleValue(knownBounds.Start - bounds.Start));
-    results.AddOrUpdateResult("Upper Diff", new DoubleValue(knownBounds.End - bounds.End));
-    results.AddOrUpdateResult("Length Diff", new DoubleValue(knownBounds.Size - bounds.Size));
+    results.AddOrUpdateResult("Best Solution Lower Diff", new DoubleValue(knownBounds.Start - bounds.Start));
+    results.AddOrUpdateResult("Best Solution Upper Diff", new DoubleValue(knownBounds.End - bounds.End));
+    results.AddOrUpdateResult("Best Solution Length Diff", new DoubleValue(knownBounds.Size - bounds.Size));
 
-    results.AddOrUpdateResult("Best Solution",
+    results.AddOrUpdateResult("Best Solution (TestFunction)",
       new SingleObjectiveTestFunctionSolution(
         best,
-        new DoubleValue(Maximization ? qualities.Max() : qualities.Min()), 
+        new DoubleValue(bestQuality), 
         new TestFunctionEvaluationWrapper(this))
     );
   
@@ -206,17 +228,10 @@ public class ContinuousSegmentOptimizationProblem : SingleObjectiveBasicProblem<
     
   }
 
-  //private static double BoundedAggregation(DoubleArray data, IntRange bounds, Aggregation aggregation) {
-  //  var matrix = new DoubleMatrix(1, data.Length);
-  //  for (int i = 0; i < data.Length; i++) matrix[0, i] = data[i];
-  //  return BoundedAggregation(matrix, bounds, aggregation);
-  //}
-
-  private static double BoundedAggregation(DoubleMatrix data, DoubleRange bounds, Aggregation aggregation) {
-    //if (bounds.Size == 0) {
-    //  return 0;
-    //}
-
+  private static double[] BoundedAggregation(DoubleMatrix data, DoubleRange bounds, Aggregation aggregation) {
+    bounds.Start = Math.Max(0, Math.Min(double.IsNaN(bounds.Start) ? double.MinValue : bounds.Start, data.Columns - 1.0));
+    bounds.End =   Math.Max(0, Math.Min(double.IsNaN(bounds.End)   ? double.MaxValue : bounds.End,   data.Columns - 1.0));
+    
     var resultValues = new double[data.Rows];
     for (int row = 0; row < data.Rows; row++) {
       var vector = data.GetRow(row).ToArray();
@@ -236,7 +251,7 @@ public class ContinuousSegmentOptimizationProblem : SingleObjectiveBasicProblem<
       }
     }
 
-    return resultValues.Average();
+    return resultValues;
   }
 
   public static IEnumerable<double> GetInterpolatedSegment(IList<double> vector, double start, double end) {

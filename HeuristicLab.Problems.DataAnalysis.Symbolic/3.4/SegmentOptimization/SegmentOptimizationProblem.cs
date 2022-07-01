@@ -138,11 +138,13 @@ public class SegmentOptimizationProblem : SingleObjectiveBasicProblem<IntegerVec
 
   public static double Evaluate(IntegerVector solution, DoubleMatrix data, IntRange knownBounds, Aggregation aggregation) {
     var bounds = new IntRange(solution.Min(), solution.Max());
-    double target = BoundedAggregation(data, knownBounds, aggregation);
-    double prediction = BoundedAggregation(data, bounds, aggregation);
-    return Math.Pow(target - prediction, 2);
+    double[] targets = BoundedAggregation(data, knownBounds, aggregation);
+    double[] predictions = BoundedAggregation(data, bounds, aggregation);
+    var diffs = targets.Zip(predictions, (t, p) => t - p);
+    var mse = diffs.Select(d => d * d).Average();
+    return mse;
   }
-
+    
   public override void Analyze(Individual[] individuals, double[] qualities, ResultCollection results, IRandom random) {
     var orderedIndividuals = individuals.Zip(qualities, (i, q) => new { Individual = i, Quality = q }).OrderBy(z => z.Quality);
     var best = Maximization ? orderedIndividuals.Last().Individual.IntegerVector(Encoding.Name) : orderedIndividuals.First().Individual.IntegerVector(Encoding.Name);
@@ -153,19 +155,21 @@ public class SegmentOptimizationProblem : SingleObjectiveBasicProblem<IntegerVec
     var knownBounds = KnownBoundsParameter.Value;
     var aggregation = aggregationParameter.Value.Value;
 
-    double target = BoundedAggregation(data, knownBounds, aggregation);
-    double prediction = BoundedAggregation(data, bounds, aggregation);
-    double diff = target - prediction;
+    double[] targets = BoundedAggregation(data, knownBounds, aggregation);
+    double[] predictions = BoundedAggregation(data, bounds, aggregation);
+    var diffs = targets.Zip(predictions, (t, p) => t - p);
+    var mse = diffs.Select(d => d * d).Average();
+    var mae = diffs.Select(d => Math.Abs(d)).Average();
 
     if (results.TryGetValue("AggValue Diff", out var oldDiffResult)) {
       var oldDiff = (DoubleValue)oldDiffResult.Value;
-      if (Math.Abs(oldDiff.Value) < Math.Abs(diff)) return;
+      if (Math.Abs(oldDiff.Value) < Math.Abs(mae)) return;
     }
 
     results.AddOrUpdateResult("Bounds", bounds);
 
-    results.AddOrUpdateResult("AggValue Diff", new DoubleValue(diff));
-    results.AddOrUpdateResult("AggValue Squared Diff", new DoubleValue(Math.Pow(diff, 2)));
+    results.AddOrUpdateResult("AggValue Diff", new DoubleValue(mae));
+    results.AddOrUpdateResult("AggValue Squared Diff", new DoubleValue(mse));
 
     results.AddOrUpdateResult("Lower Diff", new IntValue(knownBounds.Start - bounds.Start));
     results.AddOrUpdateResult("Upper Diff", new IntValue(knownBounds.End - bounds.End));
@@ -178,7 +182,7 @@ public class SegmentOptimizationProblem : SingleObjectiveBasicProblem<IntegerVec
   //  return BoundedAggregation(matrix, bounds, aggregation);
   //}
 
-  private static double BoundedAggregation(DoubleMatrix data, IntRange bounds, Aggregation aggregation) {
+  private static double[] BoundedAggregation(DoubleMatrix data, IntRange bounds, Aggregation aggregation) {
     //if (bounds.Size == 0) {
     //  return 0;
     //}
@@ -202,7 +206,7 @@ public class SegmentOptimizationProblem : SingleObjectiveBasicProblem<IntegerVec
       }
     }
 
-    return resultValues.Average();
+    return resultValues;
   }
 
   public void Load(SOPData data) {
