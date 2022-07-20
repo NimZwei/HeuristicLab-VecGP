@@ -22,7 +22,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using HEAL.Attic;
 using HeuristicLab.Common;
 using HeuristicLab.Core;
@@ -30,7 +29,6 @@ using HeuristicLab.Data;
 using HeuristicLab.Encodings.RealVectorEncoding;
 using HeuristicLab.Optimization;
 using HeuristicLab.Parameters;
-using HeuristicLab.PluginInfrastructure;
 using HeuristicLab.Problems.Instances;
 using HeuristicLab.Problems.TestFunctions;
 
@@ -48,6 +46,18 @@ public class ContinuousSegmentOptimizationProblem : SingleObjectiveBasicProblem<
     StandardDeviation
   }
 
+  [StorableType("7CA66E35-BC0B-47CD-AE81-97ADC24B0AFF")]
+  public enum Domain {
+    Index, // 0.0, 1.0, 2.0, ..., n.0
+    Normalized // 0.0, ..., 1.0
+  }
+
+  [StorableType("CF6C06FF-B370-4BDD-8BE7-A1E50AF9CB20")]
+  public enum IntegerConversion {
+    Interpolation,
+    Rounding
+  }
+  
   public override bool Maximization => false;
 
   [Storable]
@@ -66,12 +76,26 @@ public class ContinuousSegmentOptimizationProblem : SingleObjectiveBasicProblem<
     get { return aggregationParameter; }
   }
   
+  [Storable]
+  private IValueParameter<EnumValue<Domain>> domainParameter;
+  public IValueParameter<EnumValue<Domain>> DomainParameter {
+    get { return domainParameter; }
+  }
+  
+  [Storable]
+  private IValueParameter<EnumValue<IntegerConversion>> integerConversionParameter;
+  public IValueParameter<EnumValue<IntegerConversion>> IntegerConversionParameter {
+    get { return integerConversionParameter; }
+  }
+  
   public ContinuousSegmentOptimizationProblem() : base() {
     Encoding = new RealVectorEncoding("bounds");
     
     Parameters.Add(dataParameter = new ValueParameter<DoubleMatrix>("Data", ""));
     Parameters.Add(knownBoundsParameter = new ValueParameter<DoubleRange>("Known Bounds", ""));
-    Parameters.Add(aggregationParameter = new ValueParameter<EnumValue<Aggregation>>("Aggregation Function", ""));
+    Parameters.Add(aggregationParameter = new ValueParameter<EnumValue<Aggregation>>("Aggregation Function", "", new EnumValue<Aggregation>(Aggregation.Mean)));
+    Parameters.Add(domainParameter = new ValueParameter<EnumValue<Domain>>("Domain", "", new EnumValue<Domain>(Domain.Index)));
+    Parameters.Add(integerConversionParameter = new ValueParameter<EnumValue<IntegerConversion>>("Integer Conversion", "", new EnumValue<IntegerConversion>(IntegerConversion.Interpolation)));
 
     RegisterEventHandlers();
 
@@ -94,6 +118,8 @@ public class ContinuousSegmentOptimizationProblem : SingleObjectiveBasicProblem<
     dataParameter = cloner.Clone(original.dataParameter);
     knownBoundsParameter = cloner.Clone(original.knownBoundsParameter);
     aggregationParameter = cloner.Clone(original.aggregationParameter);
+    domainParameter = cloner.Clone(original.domainParameter);
+    integerConversionParameter = cloner.Clone(original.integerConversionParameter);
 
     RegisterEventHandlers();
   }
@@ -105,6 +131,11 @@ public class ContinuousSegmentOptimizationProblem : SingleObjectiveBasicProblem<
   protected ContinuousSegmentOptimizationProblem(StorableConstructorFlag _) : base(_) { }
   [StorableHook(HookType.AfterDeserialization)]
   private void AfterDeserialization() {
+    if (!Parameters.ContainsKey("Domain"))   
+      Parameters.Add(domainParameter = new ValueParameter<EnumValue<Domain>>("Domain", "", new EnumValue<Domain>(Domain.Index)));
+    if (!Parameters.ContainsKey("IntegerConversion"))
+      Parameters.Add(integerConversionParameter = new ValueParameter<EnumValue<IntegerConversion>>("IntegerConversion", "", new EnumValue<IntegerConversion>(IntegerConversion.Interpolation)));
+    
     RegisterEventHandlers();
   }
   
@@ -112,30 +143,55 @@ public class ContinuousSegmentOptimizationProblem : SingleObjectiveBasicProblem<
     dataParameter.ValueChanged += DataChanged;
     knownBoundsParameter.ValueChanged += KnownBoundsChanged;
     aggregationParameter.Value.ValueChanged += AggregationFunctionChanged;
+    domainParameter.Value.ValueChanged += DomainChanged;
+    integerConversionParameter.Value.ValueChanged += IntegerConversionChanged;
   }
+
   private void DataChanged(object sender, EventArgs eventArgs) {
-    Encoding.Bounds = new DoubleMatrix(new[,] { { 0.0, DataParameter.Value.Columns - 1.0 } });
+    ConfigureEncoding();
   }
   private void KnownBoundsChanged(object sender, EventArgs e) {
   }
   private void AggregationFunctionChanged(object sender, EventArgs eventArgs) {
+  }
+  private void DomainChanged(object sender, EventArgs e) {
+    ConfigureEncoding();
+  }
+  private void IntegerConversionChanged(object sender, EventArgs e) {
+  }
+  
+  private void ConfigureEncoding() {
+    Encoding.Length = 2;
+    Encoding.Bounds = DomainParameter.Value.Value switch {
+      Domain.Normalized => new DoubleMatrix(new[,] { { 0.0, 1.0 } }),
+      Domain.Index      => new DoubleMatrix(new[,] { { 0.0, DataParameter.Value.Columns - 1.0 } }),
+      _                 => throw new InvalidOperationException("Invalid Bounds")
+    };
   }
 
   public override double Evaluate(Individual individual, IRandom random) {
     var data = DataParameter.Value;
     var knownBounds = KnownBoundsParameter.Value;
     var aggregation = aggregationParameter.Value.Value;
+    var domain = domainParameter.Value.Value;
+    var conversion = integerConversionParameter.Value.Value;
+    
     var solution = individual.RealVector(Encoding.Name);
-    return Evaluate(solution, data, knownBounds, aggregation);
+
+    if (domain == Domain.Normalized) {
+      var length = data.Columns;
+      solution = new RealVector(solution.Select(x => x * length).ToArray());
+    }
+    
+    return Evaluate(solution, data, knownBounds, aggregation, conversion);
   }
 
-  public static double Evaluate(RealVector solution, DoubleMatrix data, DoubleRange knownBounds, Aggregation aggregation) {
+   // assumes non-normalized bounds
+  public static double Evaluate(RealVector solution, DoubleMatrix data, DoubleRange knownBounds, Aggregation aggregation, IntegerConversion conversion) {
     var bounds = new DoubleRange(solution.Min(), solution.Max());
-    //double target = BoundedAggregation(data, knownBounds, aggregation);
-    //double prediction = BoundedAggregation(data, bounds, aggregation);
-    //return Math.Pow(target - prediction, 2);
-    double[] targets = BoundedAggregation(data, knownBounds, aggregation);
-    double[] predictions = BoundedAggregation(data, bounds, aggregation);
+
+    double[] targets = BoundedAggregation(data, knownBounds, aggregation, conversion);
+    double[] predictions = BoundedAggregation(data, bounds, aggregation, conversion);
     var diffs = Enumerable.Zip(targets, predictions, (t, p) => t - p);
 
     var mse = diffs.Select(d => d * d).Average();
@@ -144,57 +200,41 @@ public class ContinuousSegmentOptimizationProblem : SingleObjectiveBasicProblem<
   }
 
   public override void Analyze(Individual[] individuals, double[] qualities, ResultCollection results, IRandom random) {
-    var orderedIndividuals = individuals.Zip(qualities, (i, q) => new { Individual = i, Quality = q })
-      .OrderBy(z => z.Quality);
-    var bestQuality = Maximization ? orderedIndividuals.Last().Quality : orderedIndividuals.First().Quality;
-    var best = Maximization
-      ? orderedIndividuals.Last().Individual.RealVector(Encoding.Name)
-      : orderedIndividuals.First().Individual.RealVector(Encoding.Name);
-
+    var orderedIndividuals = individuals.Zip(qualities, (i, q) => new { Individual = i, Quality = q }).OrderBy(z => z.Quality);
+    var bestIndividual = Maximization ? orderedIndividuals.Last() : orderedIndividuals.First();
     
-    if (results.TryGetValue("Best Quality", out var currentBestQualityResult)) {
-      double currentBestQuality = ((DoubleValue)currentBestQualityResult.Value).Value;
-      bool isBetter = Maximization ? bestQuality > currentBestQuality : bestQuality < currentBestQuality;
+    var bestQuality = bestIndividual.Quality;
+    if (results.TryGetValue("Best Quality", out var lastBestQualityResult)) {
+      double lastBestQuality = ((DoubleValue)lastBestQualityResult.Value).Value;
+      bool isBetter = Maximization ? bestQuality > lastBestQuality : bestQuality < lastBestQuality;
       if (!isBetter) return;
     }
     
-    var bounds = new DoubleRange(best.Min(), best.Max());
+    var bestSolution = bestIndividual.Individual.RealVector(Encoding.Name);
+    var bounds = new DoubleRange(bestSolution.Min(), bestSolution.Max());
 
-    var data = DataParameter.Value;
-    var knownBounds = KnownBoundsParameter.Value;
-    var aggregation = aggregationParameter.Value.Value;
-
-    double[] targets = BoundedAggregation(data, knownBounds, aggregation);
-    double[] predictions = BoundedAggregation(data, bounds, aggregation);
-    var diffs = Enumerable.Zip(targets, predictions, (t, p) => t - p);
-
-    var mse = diffs.Select(d => d * d).Average();
-    var mae = diffs.Select(d => Math.Abs(d)).Average();
-
-    // if (results.TryGetValue("AggValue Diff", out var oldDiffResult)) {
-    //   var oldDiff = (DoubleValue)oldDiffResult.Value;
-    //   if (Math.Abs(oldDiff.Value) < Math.Abs(diff)) return;
-    // }
-    //
-    //
+    var length = DataParameter.Value.Columns;
+    var normalizedBounds = DomainParameter.Value.Value switch {
+      Domain.Normalized => bounds,
+      Domain.Index => new DoubleRange(bounds.Start / length, bounds.End / length),
+      _ => throw new ArgumentOutOfRangeException()
+    };
+    var indexBounds = new DoubleRange(normalizedBounds.Start * length, normalizedBounds.End * length);
+    var roundedBounds = new IntRange((int)Math.Round(indexBounds.Start), (int)Math.Round(indexBounds.End));
     
-    results.AddOrUpdateResult("Bounds", bounds);
     results.AddOrUpdateResult("Best Solution", bounds);
     results.AddOrUpdateResult("Best Quality", new DoubleValue(bestQuality));
-
-    results.AddOrUpdateResult("Best Solution Diff", new DoubleValue(mae));
-    results.AddOrUpdateResult("Best Solution Squared Diff", new DoubleValue(mse));
-
-    results.AddOrUpdateResult("Best Solution Lower Diff", new DoubleValue(knownBounds.Start - bounds.Start));
-    results.AddOrUpdateResult("Best Solution Upper Diff", new DoubleValue(knownBounds.End - bounds.End));
-    results.AddOrUpdateResult("Best Solution Length Diff", new DoubleValue(knownBounds.Size - bounds.Size));
-
-    results.AddOrUpdateResult("Best Solution (TestFunction)",
-      new SingleObjectiveTestFunctionSolution(
-        best,
-        new DoubleValue(bestQuality), 
-        new TestFunctionEvaluationWrapper(this))
-    );
+    
+    results.AddOrUpdateResult("Best Solution Indices", indexBounds);
+    results.AddOrUpdateResult("Best Solution Rounded", roundedBounds);
+    results.AddOrUpdateResult("Best Solution Normalized", normalizedBounds);
+    
+    // results.AddOrUpdateResult("Best Solution (TestFunction)",
+    //   new SingleObjectiveTestFunctionSolution(
+    //     best,
+    //     new DoubleValue(bestQuality), 
+    //     new TestFunctionEvaluationWrapper(this))
+    // );
   
   }
 
@@ -219,7 +259,7 @@ public class ContinuousSegmentOptimizationProblem : SingleObjectiveBasicProblem<
     public override string FunctionName => sop.Name;
     public override double Evaluate(RealVector point) {
       return ContinuousSegmentOptimizationProblem.Evaluate(point,
-        sop.DataParameter.Value, sop.KnownBoundsParameter.Value, sop.AggregationParameter.Value.Value);
+        sop.DataParameter.Value, sop.KnownBoundsParameter.Value, sop.AggregationParameter.Value.Value, sop.integerConversionParameter.Value.Value);
     }
     public override RealVector GetBestKnownSolution(int dimension) => new RealVector(new[] { sop.KnownBoundsParameter.Value.Start, sop.KnownBoundsParameter.Value.End });
     public override bool Maximization => sop.Maximization;
@@ -228,27 +268,27 @@ public class ContinuousSegmentOptimizationProblem : SingleObjectiveBasicProblem<
     
   }
 
-  private static double[] BoundedAggregation(DoubleMatrix data, DoubleRange bounds, Aggregation aggregation) {
-    bounds.Start = Math.Max(0, Math.Min(double.IsNaN(bounds.Start) ? double.MinValue : bounds.Start, data.Columns - 1.0));
-    bounds.End =   Math.Max(0, Math.Min(double.IsNaN(bounds.End)   ? double.MaxValue : bounds.End,   data.Columns - 1.0));
+  // assumes non-normalized bounds
+  private static double[] BoundedAggregation(DoubleMatrix data, DoubleRange bounds, Aggregation aggregation, IntegerConversion conversion) {
+    bounds.Start = Math.Max(0, Math.Min(double.IsNaN(bounds.Start) ? 0.0                : bounds.Start, data.Columns - 1.0));
+    bounds.End =   Math.Max(0, Math.Min(double.IsNaN(bounds.End)   ? data.Columns - 1.0 : bounds.End,   data.Columns - 1.0));
     
     var resultValues = new double[data.Rows];
     for (int row = 0; row < data.Rows; row++) {
       var vector = data.GetRow(row).ToArray();
-      var segment = GetInterpolatedSegment(vector, bounds.Start, bounds.End); // inclusive end
-      switch (aggregation) {
-        case Aggregation.Sum:
-          resultValues[row] = segment.Sum();
-          break;
-        case Aggregation.Mean:
-          resultValues[row] = segment.Average();
-          break;
-        case Aggregation.StandardDeviation:
-          resultValues[row] = segment.StandardDeviationPop();
-          break;
-        default:
-          throw new NotImplementedException();
-      }
+    
+     var segment = conversion switch {
+        IntegerConversion.Interpolation => GetInterpolatedSegment(vector, bounds.Start, bounds.End),
+        IntegerConversion.Rounding => GetRoundedSegment(vector, bounds.Start, bounds.End),
+        _ => throw new InvalidOperationException("Invalid Integer Conversion")
+      };
+
+      resultValues[row] = aggregation switch {
+        Aggregation.Sum => segment.Sum(),
+        Aggregation.Mean => segment.Average(),
+        Aggregation.StandardDeviation => segment.StandardDeviationPop(),
+        _ => throw new NotImplementedException()
+      };
     }
 
     return resultValues;
@@ -305,78 +345,85 @@ public class ContinuousSegmentOptimizationProblem : SingleObjectiveBasicProblem<
       var r = GetInterpolatedSegment(v, a, b).ToArray();
       Console.WriteLine($"{(r.SequenceEqual(expected) ? " " : "x")} {a}-{b}: [{string.Join(" " , r)}]");
     }
+
+    for (double i = 0; i <= 3.0; i += 0.1) {
+      var seg = GetInterpolatedSegment(v, i, 3.0);
+      Console.WriteLine($"{i}\t[{string.Join(" ", seg)}]\t{seg.Average()}");
+    }
     
     
-    Test(0.0, 3.0,   3.0, 5.0, 7.0, 9.0);
-    Test(0.0, 2.0,   3.0, 5.0, 7.0);
-    Test(1.0, 3.0,   5.0, 7.0, 9.0);
-    
-    Test(0.0, 0.0,   3.0);
-    Test(3.0, 3.0,   9.0);
-    
-    Test(0.0, 1.0,   3.0, 5.0);
-    Test(2.0, 3.0,   7.0, 9.0);
-    
-    Test(0.0, 2.5,   3.0, 5.0, 8.0);
-    Test(0.5, 3.0,   4.0, 7.0, 9.0);
-    
-    Test(0.5, 2.5,   4.0, 8.0);
-    
-    Test(1.5, 1.5,     6.0);
-    Test(1.25, 1.25,   5.5);
-    Test(1.75, 1.75,   6.5);
-    
-    Test(1.25, 1.75,   6.0);
-    
-    Test(0.25, 3.0,   3.5, 7, 9);
-    Test(0.75, 3.0,   4.5, 7, 9);
-    
-    Test(0, 2.25,   3, 5, 7.5);
-    Test(0, 2.75,   3, 5, 8.5);
-    
-    Test(0.25, 2.25,   3.5, 7.5);
-    Test(0.75, 2.75,   4.5, 8.5);
-    Test(0.25, 2.75,   3.5, 8.5);
-    
-    
-    // reuse cases:
-    Test(0.5, 1.5,   4, 6); 
-    Test(1.5, 2.5,   6, 8); 
-    
-    Test(0.25, 1.25,   3.5, 5.5);
-    Test(0.75, 1.75,   4.5, 6.5);
-    Test(0.25, 1.75,   3.5, 6.5);
-    
+    // Test(0.0, 3.0,   3.0, 5.0, 7.0, 9.0);
+    // Test(0.0, 2.0,   3.0, 5.0, 7.0);
+    // Test(1.0, 3.0,   5.0, 7.0, 9.0);
+    //
+    // Test(0.0, 0.0,   3.0);
+    // Test(3.0, 3.0,   9.0);
+    //
+    // Test(0.0, 1.0,   3.0, 5.0);
+    // Test(2.0, 3.0,   7.0, 9.0);
+    //
+    // Test(0.0, 2.5,   3.0, 5.0, 8.0);
+    // Test(0.5, 3.0,   4.0, 7.0, 9.0);
+    //
+    // Test(0.5, 2.5,   4.0, 8.0);
+    //
+    // Test(1.5, 1.5,     6.0);
+    // Test(1.25, 1.25,   5.5);
+    // Test(1.75, 1.75,   6.5);
+    //
+    // Test(1.25, 1.75,   6.0); // or [5.5, 6.5] ?
+    //
+    // Test(0.25, 3.0,   3.5, 7, 9);
+    // Test(0.75, 3.0,   4.5, 7, 9);
+    //
+    // Test(0, 2.25,   3, 5, 7.5);
+    // Test(0, 2.75,   3, 5, 8.5);
+    //
+    // Test(0.25, 2.25,   3.5, 7.5);
+    // Test(0.75, 2.75,   4.5, 8.5);
+    // Test(0.25, 2.75,   3.5, 8.5);
+    //
+    //
+    // // reuse cases:
+    // Test(0.5, 1.5,   4, 6); 
+    // Test(1.5, 2.5,   6, 8); 
+    //
+    // Test(0.25, 1.25,   3.5, 5.5);
+    // Test(0.75, 1.75,   4.5, 6.5);
+    // Test(0.25, 1.75,   3.5, 6.5);
+    //
     
 
   }
 
+  public static IEnumerable<double> GetRoundedSegment(IList<double> vector, double start, double end) {
+    int roundedStart = (int)Math.Round(start); // int roundedStart = (int)Math.Floor(start);
+    int roundedEnd = (int)Math.Round(end); // int roundedEnd = (int)Math.Floor(end);
+    
+    //return vector.Skip(roundedStart).Take(roundedEnd - roundedStart/* + 1*/);
+    for (int i = roundedStart; i <= roundedEnd; i++) {
+      yield return vector[i];
+    }
+  }
+  
+
   public void Load(SOPData data) {
     DataParameter.Value = new DoubleMatrix(data.Data);
-    KnownBoundsParameter.Value = new DoubleRange(data.Lower, data.Upper - 1.0);
-    switch (data.Aggregation.ToLower()) {
-      case "sum":
-        AggregationParameter.Value.Value = Aggregation.Sum;
-        break;
-      case "mean":
-      case "avg":
-        AggregationParameter.Value.Value = Aggregation.Mean;
-        break;
-      case "standarddeviation":
-      case "std":
-      case "sd":
-        AggregationParameter.Value.Value = Aggregation.StandardDeviation;
-        break;
-      default:
-        throw new NotSupportedException();
-    }
-                                          
-    Encoding.Length = 2;
-    Encoding.Bounds = new DoubleMatrix(new[,] { { 0.0, DataParameter.Value.Columns - 1.0 } });
-
-    BestKnownQuality = 0;
+    KnownBoundsParameter.Value = new DoubleRange(data.Lower, data.Upper - 1.0); // data.Upper is integer (incl), KnownBounds is real (excl)
+    AggregationParameter.Value.Value = data.Aggregation.ToLower() switch {
+      "sum" => Aggregation.Sum,
+      "mean" => Aggregation.Mean,
+      "avg" => Aggregation.Mean,
+      "standarddeviation" => Aggregation.StandardDeviation,
+      "std" => Aggregation.StandardDeviation,
+      "sd" => Aggregation.StandardDeviation,
+      _ => throw new NotSupportedException()
+    };
 
     Name = data.Name;
     Description = data.Description;
+    BestKnownQuality = 0;
+    
+    ConfigureEncoding();
   }
 }

@@ -121,7 +121,7 @@ public class SegmentOptimizationProblem : SingleObjectiveBasicProblem<IntegerVec
     aggregationParameter.Value.ValueChanged += AggregationFunctionChanged;
   }
   private void DataChanged(object sender, EventArgs eventArgs) {
-    Encoding.Bounds = new IntMatrix(new[,] { { 0, DataParameter.Value.Columns } });
+    Encoding.Bounds = new IntMatrix(new[,] { { 0, DataParameter.Value.Columns } }); // excl. end
   }
   private void KnownBoundsChanged(object sender, EventArgs e) {
   }
@@ -146,64 +146,36 @@ public class SegmentOptimizationProblem : SingleObjectiveBasicProblem<IntegerVec
   }
     
   public override void Analyze(Individual[] individuals, double[] qualities, ResultCollection results, IRandom random) {
-    var orderedIndividuals = individuals.Zip(qualities, (i, q) => new { Individual = i, Quality = q }).OrderBy(z => z.Quality);
-    var best = Maximization ? orderedIndividuals.Last().Individual.IntegerVector(Encoding.Name) : orderedIndividuals.First().Individual.IntegerVector(Encoding.Name);
+    var orderedIndividuals = individuals.Zip(qualities, (i, q) => new { Individual = i, Quality = q })
+      .OrderBy(z => z.Quality);
+    var bestQuality = Maximization ? orderedIndividuals.Last().Quality : orderedIndividuals.First().Quality;
+    var best = Maximization
+      ? orderedIndividuals.Last().Individual.IntegerVector(Encoding.Name)
+      : orderedIndividuals.First().Individual.IntegerVector(Encoding.Name);
 
+    if (results.TryGetValue("Best Quality", out var currentBestQualityResult)) {
+      double currentBestQuality = ((DoubleValue)currentBestQualityResult.Value).Value;
+      bool isBetter = Maximization ? bestQuality > currentBestQuality : bestQuality < currentBestQuality;
+      if (!isBetter) return;
+    }
+    
     var bounds = new IntRange(best.Min(), best.Max());
 
-    var data = DataParameter.Value;
-    var knownBounds = KnownBoundsParameter.Value;
-    var aggregation = aggregationParameter.Value.Value;
-
-    double[] targets = BoundedAggregation(data, knownBounds, aggregation);
-    double[] predictions = BoundedAggregation(data, bounds, aggregation);
-    var diffs = targets.Zip(predictions, (t, p) => t - p);
-    var mse = diffs.Select(d => d * d).Average();
-    var mae = diffs.Select(d => Math.Abs(d)).Average();
-
-    if (results.TryGetValue("AggValue Diff", out var oldDiffResult)) {
-      var oldDiff = (DoubleValue)oldDiffResult.Value;
-      if (Math.Abs(oldDiff.Value) < Math.Abs(mae)) return;
-    }
-
-    results.AddOrUpdateResult("Bounds", bounds);
-
-    results.AddOrUpdateResult("AggValue Diff", new DoubleValue(mae));
-    results.AddOrUpdateResult("AggValue Squared Diff", new DoubleValue(mse));
-
-    results.AddOrUpdateResult("Lower Diff", new IntValue(knownBounds.Start - bounds.Start));
-    results.AddOrUpdateResult("Upper Diff", new IntValue(knownBounds.End - bounds.End));
-    results.AddOrUpdateResult("Length Diff", new IntValue(knownBounds.Size - bounds.Size));
+    results.AddOrUpdateResult("Best Solution", bounds);
+    results.AddOrUpdateResult("Best Quality", new DoubleValue(bestQuality));
   }
-
-  //private static double BoundedAggregation(DoubleArray data, IntRange bounds, Aggregation aggregation) {
-  //  var matrix = new DoubleMatrix(1, data.Length);
-  //  for (int i = 0; i < data.Length; i++) matrix[0, i] = data[i];
-  //  return BoundedAggregation(matrix, bounds, aggregation);
-  //}
-
+  
   private static double[] BoundedAggregation(DoubleMatrix data, IntRange bounds, Aggregation aggregation) {
-    //if (bounds.Size == 0) {
-    //  return 0;
-    //}
-
-    var resultValues = new double[data.Rows];
+ var resultValues = new double[data.Rows];
     for (int row = 0; row < data.Rows; row++) {
       var vector = data.GetRow(row);
-      var segment = vector.Skip(bounds.Start).Take(bounds.Size + 1); // exclusive end
-      switch (aggregation) {
-        case Aggregation.Sum:
-          resultValues[row] = segment.Sum();
-          break;
-        case Aggregation.Mean:
-          resultValues[row] = segment.Average();
-          break;
-        case Aggregation.StandardDeviation:
-          resultValues[row] = segment.StandardDeviationPop();
-          break;
-        default:
-          throw new NotImplementedException();
-      }
+      var segment = vector.Skip(bounds.Start).Take(bounds.Size + 1); // exclusive end => always take at least a single element
+      resultValues[row] = aggregation switch {
+        Aggregation.Sum => segment.Sum(),
+        Aggregation.Mean => segment.Average(),
+        Aggregation.StandardDeviation => segment.StandardDeviationPop(),
+        _ => throw new NotImplementedException()
+      };
     }
 
     return resultValues;
@@ -212,23 +184,16 @@ public class SegmentOptimizationProblem : SingleObjectiveBasicProblem<IntegerVec
   public void Load(SOPData data) {
     DataParameter.Value = new DoubleMatrix(data.Data);
     KnownBoundsParameter.Value = new IntRange(data.Lower, data.Upper);
-    switch (data.Aggregation.ToLower()) {
-      case "sum":
-        AggregationParameter.Value.Value = Aggregation.Sum;
-        break;
-      case "mean":
-      case "avg":
-        AggregationParameter.Value.Value = Aggregation.Mean;
-        break;
-      case "standarddeviation":
-      case "std":
-      case "sd":
-        AggregationParameter.Value.Value = Aggregation.StandardDeviation;
-        break;
-      default:
-        throw new NotSupportedException();
-    }
-                                          
+    AggregationParameter.Value.Value = data.Aggregation.ToLower() switch {
+      "sum" => Aggregation.Sum,
+      "mean" => Aggregation.Mean,
+      "avg" => Aggregation.Mean,
+      "standarddeviation" => Aggregation.StandardDeviation,
+      "std" => Aggregation.StandardDeviation,
+      "sd" => Aggregation.StandardDeviation,
+      _ => throw new NotSupportedException()
+    };
+
     Encoding.Length = 2;
     Encoding.Bounds = new IntMatrix(new[,] { { 0, DataParameter.Value.Columns } });
 
@@ -245,6 +210,8 @@ public class SegmentOptimizationProblem : SingleObjectiveBasicProblem<IntegerVec
     return matrix;
   }
 
+  #region For removing duplicate data after hive deserialization
+  
   private class DoubleArrayComparer : IEqualityComparer<double[,]> {
     public bool Equals(double[,] x, double[,] y) {
       if (ReferenceEquals(x, y)) return true;
@@ -318,4 +285,6 @@ public class SegmentOptimizationProblem : SingleObjectiveBasicProblem<IntegerVec
     }
     return removedQualities;
   }
+  
+  #endregion
 }
