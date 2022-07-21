@@ -286,32 +286,40 @@ public class DoubleVector : Vector<double> {
   }
 
   public static double Mean(DoubleVector v) {
+    if (!alglib.apserv.isfinitevector(v.values, v.Length, null)) return double.NaN;
     return alglib.samplemean(v.values, v.Length);
   }
   public static double Median(DoubleVector v) {
+    if (!alglib.apserv.isfinitevector(v.values, v.Length, null)) return double.NaN;
     alglib.samplemedian(v.values, out double median);
     return median;
   }
 
   public static double StandardDeviation(DoubleVector v) {
+    if (!alglib.apserv.isfinitevector(v.values, v.Length, null)) return double.NaN;
     return Math.Sqrt(alglib.samplevariance(v.values, v.Length));
   }
   public static double MeanAbsoluteDeviation(DoubleVector v) {
+    if (!alglib.apserv.isfinitevector(v.values, v.Length, null)) return double.NaN;
     alglib.sampleadev(v.values, v.Length, out double meanDev);
     return meanDev;
   }
   public static double Variance(DoubleVector v) {
+    if (!alglib.apserv.isfinitevector(v.values, v.Length, null)) return double.NaN;
     return alglib.samplevariance(v.values, v.Length);
   }
   public static double IQR(DoubleVector v) {
+    if (!alglib.apserv.isfinitevector(v.values, v.Length, null)) return double.NaN;
     double q1 = Quantile(v, 0.25), q3 = Quantile(v, 0.75);
     return q3 - q1;
   }
 
   public static double Skewness(DoubleVector v) {
+    if (!alglib.apserv.isfinitevector(v.values, v.Length, null)) return double.NaN;
     return alglib.sampleskewness(v.values, v.Length);
   }
   public static double Kurtosis(DoubleVector v) {
+    if (!alglib.apserv.isfinitevector(v.values, v.Length, null)) return double.NaN;
     return alglib.samplekurtosis(v.values, v.Length);
   }
 
@@ -322,6 +330,7 @@ public class DoubleVector : Vector<double> {
     return v.Max();
   }
   public static double Quantile(DoubleVector v, double q) {
+    if (!alglib.apserv.isfinitevector(v.values, v.Length, null)) return double.NaN;
     alglib.samplepercentile(v.values, v.Length, q, out double quantile, null);
     return quantile;
   }
@@ -356,14 +365,20 @@ public class DoubleVector : Vector<double> {
   }
   public static double Covariance(DoubleVector lhs, DoubleVector rhs) {
     if (lhs.Length != rhs.Length) throw new InvalidOperationException($"Vector lengths do not match ({lhs.Length} != {rhs.Length}");
+    if (!alglib.apserv.isfinitevector(lhs.values, lhs.Length, null)) return double.NaN;
+    if (!alglib.apserv.isfinitevector(rhs.values, rhs.Length, null)) return double.NaN;
     return alglib.cov2(lhs.values, rhs.values, lhs.Length);
   }
   public static double PearsonCorrelation(DoubleVector lhs, DoubleVector rhs) {
     if (lhs.Length != rhs.Length) throw new InvalidOperationException($"Vector lengths do not match ({lhs.Length} != {rhs.Length}");
+    if (!alglib.apserv.isfinitevector(lhs.values, lhs.Length, null)) return double.NaN;
+    if (!alglib.apserv.isfinitevector(rhs.values, rhs.Length, null)) return double.NaN;
     return alglib.pearsoncorr2(lhs.values, rhs.values, lhs.Length);
   }
   public static double SpearmanRankCorrelation(DoubleVector lhs, DoubleVector rhs) {
     if (lhs.Length != rhs.Length) throw new InvalidOperationException($"Vector lengths do not match ({lhs.Length} != {rhs.Length}");
+    if (!alglib.apserv.isfinitevector(lhs.values, lhs.Length, null)) return double.NaN;
+    if (!alglib.apserv.isfinitevector(rhs.values, rhs.Length, null)) return double.NaN;
     return alglib.spearmancorr2(lhs.values, rhs.values, lhs.Length);
   }
 

@@ -132,6 +132,7 @@
     <Compile Include="ArchitectureManipulators\SymbolicExpressionTreeArchitectureManipulator.cs" />
     <Compile Include="Creators\BalancedTreeCreator.cs" />
     <Compile Include="Grammars\GrammarUtils.cs" />
+    <Compile Include="Operators\ExpandCompositeTreeNodeOperator.cs" />
     <Compile Include="SymbolicExpressionTreeProblem.cs" />
     <Compile Include="Compiler\Instruction.cs" />
     <Compile Include="Compiler\LinearInstruction.cs" />

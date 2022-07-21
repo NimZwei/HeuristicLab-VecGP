@@ -83,15 +83,15 @@ public sealed class CompositeTreeNode : SymbolicExpressionTreeNode {
     
     return expandedTree;
   }
-  private static Dictionary<CompositeParameterSymbol, ISymbolicExpressionTreeNode> GetParameterMappings(ISymbolicExpressionTreeNode prototype) {
+  private static Dictionary<ISymbolicExpressionTreeNode, CompositeParameterSymbol> GetParameterMappings(ISymbolicExpressionTreeNode prototype) {
     return prototype.IterateNodesPrefix()
       .Where(node => node.Symbol is CompositeParameterSymbol)
-      .ToDictionary(node => (CompositeParameterSymbol)node.Symbol, node => node);
+      .ToDictionary(node => node, node => (CompositeParameterSymbol)node.Symbol);
   }
-  private static void ReplaceArguments(IDictionary<CompositeParameterSymbol, ISymbolicExpressionTreeNode> parameterMappings, IList<ISymbolicExpressionTreeNode> arguments) {
+  private static void ReplaceArguments(IDictionary<ISymbolicExpressionTreeNode, CompositeParameterSymbol> parameterMappings, IList<ISymbolicExpressionTreeNode> arguments) {
     foreach (var mapping in parameterMappings) {
-      var symbol = mapping.Key;
-      var parameterNode = mapping.Value;
+      var parameterNode = mapping.Key;
+      var symbol = mapping.Value;
       
       var argument = (ISymbolicExpressionTreeNode)arguments[symbol.ParameterIndex].Clone();
       parameterNode.Parent.ReplaceSubtree(parameterNode, argument);

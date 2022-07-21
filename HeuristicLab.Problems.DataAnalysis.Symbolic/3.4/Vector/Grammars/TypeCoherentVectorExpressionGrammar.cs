@@ -232,9 +232,9 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     var vectorExponentialAndLogarithmicSymbols = new GroupSymbol(VectorExponentialFunctionsName, vectorExp, vectorLog );
     var vectorPowerSymbols = new GroupSymbol(VectorPowerFunctionsName, vectorSquare, vectorSqrt, vectorCube, vectorCubeRoot, vectorPower, vectorRoot);
     var vectorTerminalSymbols = new GroupSymbol(VectorTerminalsName, vectorVariable);
-    var scalingSymbols = new GroupSymbol(VectorScalingName, vectorNormalize, vectorStandardize);
-    var reorderingSymbols = new GroupSymbol(VectorReorderingName, vectorSort, vectorSortDescending, vectorReverse, vectorRoll);
-    var vectorSymbols = new GroupSymbol(VectorSymbolsName, vectorArithmeticSymbols, /*vectorComparisonSymbols,*/ vectorTrigonometricSymbols, vectorExponentialAndLogarithmicSymbols, vectorPowerSymbols, vectorTerminalSymbols, reorderingSymbols, scalingSymbols);
+    var vectorScalingSymbols = new GroupSymbol(VectorScalingName, vectorNormalize, vectorStandardize);
+    var vectorReorderingSymbols = new GroupSymbol(VectorReorderingName, vectorSort, vectorSortDescending, vectorReverse, vectorRoll);
+    var vectorSymbols = new GroupSymbol(VectorSymbolsName, vectorArithmeticSymbols, /*vectorComparisonSymbols,*/ vectorTrigonometricSymbols, vectorExponentialAndLogarithmicSymbols, vectorPowerSymbols, vectorTerminalSymbols, vectorReorderingSymbols, vectorScalingSymbols);
 
     var vectorSubVectorSymbols = new GroupSymbol(VectorSubVectorName, subvectorLocal, subvectorSubtree);
     // TODO: moving mean/median/...?
@@ -362,6 +362,7 @@ public class TypeCoherentVectorExpressionGrammar : DataAnalysisGrammar, ISymboli
     AddAllowedChildSymbol(vectorPower, number, 1);
     AddAllowedChildSymbol(vectorRoot, constant, 1);
     AddAllowedChildSymbol(vectorRoot, number, 1);
+    AddAllowedChildSymbol(vectorScalingSymbols, vectorSymbols);
 
     AddAllowedChildSymbol(subvectorLocal, vectorSymbols);
     AddAllowedChildSymbol(subvectorSubtree, vectorSymbols, 0);
