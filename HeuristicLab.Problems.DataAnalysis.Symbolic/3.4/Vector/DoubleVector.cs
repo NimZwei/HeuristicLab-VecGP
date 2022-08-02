@@ -153,9 +153,12 @@ public class DoubleVector : Vector<double> {
 
   public bool IsFinite => alglib.apserv.isfinitevector(values, Length, null);
 
+  protected DoubleVector(int count)
+    : base(new double[count]) {
+  }
   public DoubleVector(IEnumerable<double> values)  // clone
   : base (values.ToArray()) { 
-    if (Length == 0) throw new InvalidOperationException("No empty vectors allowed");
+    //if (Length == 0) throw new InvalidOperationException("No empty vectors allowed");
   }
   
   [StorableConstructor] protected DoubleVector(StorableConstructorFlag _) : base(_) { }
@@ -383,31 +386,42 @@ public class DoubleVector : Vector<double> {
   }
 
   public static DoubleVector SubVector(DoubleVector v, int startIdx, int count) {
-    return SubVector(v, startIdx, startIdx + count, false);
+    return SubVector(v, startIdx, startIdx + count + 1, false);
   }
-  public static DoubleVector SubVector(DoubleVector v, int startIdx, int endIdx, bool allowRoundTrip) {
+  public static DoubleVector SubVector(DoubleVector v, int startIdx, int endIdx/*excl*/, bool allowRoundTrip) {
     if (!allowRoundTrip && startIdx > endIdx)
       throw new InvalidOperationException("EndIndex must come after StartIndex if RoundTrip is not allowed.");
-    
-    var slices = GetVectorSlices(startIdx, endIdx, v.Length).ToList();
-    var totalSize = slices.Sum(s => s.Count);
-    var resultVector = new DoubleVector(new double [totalSize]);
 
-    var curIdx = 0;
-    foreach (var (start, count) in slices) {
-      v.CopySubVectorTo(resultVector, sourceIndex: start, targetIndex: curIdx, count: count);
-      curIdx += count;
-    }
-    return resultVector;
-  }
-  public static IEnumerable<(int Start, int Count)> GetVectorSlices(int startIdx, int endIdx, int length) {
+    //DoubleVector resultVector;
+    //var slices = GetVectorSlices(startIdx, endIdx, v.Length).ToList();
+    //var totalSize = slices.Sum(s => s.Count);
+    //var resultVector = new DoubleVector(new double [newLength]);
+    
     if (startIdx <= endIdx) {
-      yield return (startIdx, endIdx - startIdx + 1); // incl end
+      var resultVector = new DoubleVector(endIdx - startIdx);
+       v.CopySubVectorTo(resultVector, startIdx, 0, endIdx - startIdx);
+      return resultVector;
     } else {
-      yield return (startIdx, length - startIdx); // startIdx to end of vector
-      yield return (0, endIdx); // start to endIdx of vector
+      int length = v.Length;
+      var  resultVector = new DoubleVector(length - startIdx + endIdx);
+      v.CopySubVectorTo(resultVector, startIdx, 0, length - startIdx); // startIdx to end of vector
+      v.CopySubVectorTo(resultVector, 0, length - startIdx, endIdx); // start to endIdx of vector
+      return resultVector;
     }
+    // var curIdx = 0;
+    // foreach (var (start, count) in slices) {
+    //   v.CopySubVectorTo(resultVector, sourceIndex: start, targetIndex: curIdx, count: count);
+    //   curIdx += count;
+    // }
   }
+  // public static IEnumerable<(int Start, int Count)> GetVectorSlices(int startIdx, int endIdx/*excl*/, int length) {
+  //   if (startIdx <= endIdx) {
+  //     yield return (startIdx, endIdx - startIdx);
+  //   } else {
+  //     yield return (startIdx, length - startIdx); // startIdx to end of vector
+  //     yield return (0, endIdx); // start to endIdx of vector
+  //   }
+  // }
 
   public static DoubleVector Reverse(DoubleVector v) {
     return new DoubleVector(v.Reverse());

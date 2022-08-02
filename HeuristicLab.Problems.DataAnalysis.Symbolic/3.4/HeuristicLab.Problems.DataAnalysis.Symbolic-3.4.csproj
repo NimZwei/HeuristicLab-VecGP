@@ -198,6 +198,7 @@
     <Compile Include="Mutators\SubVectorImprovementManipulator.cs" />
     <Compile Include="Mutators\SymbolicDataAnalysisExpressionManipulator.cs" />
     <Compile Include="SegmentOptimization\ContinuousSegmentOptimizationProblem.cs" />
+    <Compile Include="SegmentOptimization\RoundedSegmentOptimizationProblem.cs" />
     <Compile Include="SegmentOptimization\SegmentOptimizationProblem.cs" />
     <Compile Include="Selectors\DiversitySelector.cs" />
     <Compile Include="StructureTemplate\StructureTemplate.cs" />

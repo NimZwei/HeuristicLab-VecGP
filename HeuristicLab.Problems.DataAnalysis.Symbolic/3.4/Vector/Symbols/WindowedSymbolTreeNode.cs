@@ -73,8 +73,8 @@ public class WindowedSymbolTreeNode : SymbolicExpressionTreeNode {
     base.ResetLocalParameters(random);
 
     if (Symbol.EnableWindowing) {
-      Start = NormalDistributedRandom.NextDouble(random, Symbol.OffsetMu, Symbol.OffsetSigma);
-      End = NormalDistributedRandom.NextDouble(random, Symbol.LengthMu, Symbol.LengthSigma);
+      Start = NormalDistributedRandom.NextDouble(random, Symbol.StartMu, Symbol.StartSigma);
+      End = NormalDistributedRandom.NextDouble(random, Symbol.EndMu, Symbol.EndSigma);
     }
   }
 
@@ -82,8 +82,8 @@ public class WindowedSymbolTreeNode : SymbolicExpressionTreeNode {
     base.ShakeLocalParameters(random, shakingFactor);
 
     if (Symbol.EnableWindowing) {
-      Start += NormalDistributedRandom.NextDouble(random, Symbol.ManipulatorOffsetMu, Symbol.ManipulatorOffsetSigma) * shakingFactor;
-      End += NormalDistributedRandom.NextDouble(random, Symbol.ManipulatorLengthMu, Symbol.ManipulatorLengthSigma) * shakingFactor;
+      Start += NormalDistributedRandom.NextDouble(random, Symbol.ManipulatorStartMu, Symbol.ManipulatorStartSigma) * shakingFactor;
+      End += NormalDistributedRandom.NextDouble(random, Symbol.ManipulatorEndMu, Symbol.ManipulatorEndSigma) * shakingFactor;
     }
   }
   

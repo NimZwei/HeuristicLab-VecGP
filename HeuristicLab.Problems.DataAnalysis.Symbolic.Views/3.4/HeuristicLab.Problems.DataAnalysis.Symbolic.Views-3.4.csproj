@@ -163,6 +163,12 @@
     <Compile Include="Symbols\NumberView.Designer.cs">
       <DependentUpon>NumberView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Symbols\WindowedSymbolView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Symbols\WindowedSymbolView.Designer.cs">
+      <DependentUpon>WindowedSymbolView.cs</DependentUpon>
+    </Compile>
     <Compile Include="TextualSymbolicDataAnalysisModelView.cs">
       <SubType>UserControl</SubType>
     </Compile>

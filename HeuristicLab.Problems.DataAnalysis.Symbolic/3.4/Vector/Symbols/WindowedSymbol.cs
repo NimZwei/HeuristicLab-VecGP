@@ -53,95 +53,95 @@ public abstract class WindowedSymbol : Symbol {
     }
   }
 
-  [Storable]
-  private double offsetMu;
-  public double OffsetMu {
-    get { return offsetMu; }
+  [Storable(OldName = "offsetMu")]
+  private double startMu;
+  public double StartMu {
+    get { return startMu; }
     set {
-      if (value != offsetMu) {
-        offsetMu = value;
+      if (value != startMu) {
+        startMu = value;
         OnChanged(EventArgs.Empty);
       }
     }
   }
-  [Storable]
-  private double offsetSigma;
-  public double OffsetSigma {
-    get { return offsetSigma; }
+  [Storable(OldName = "offsetSigma")]
+  private double startSigma;
+  public double StartSigma {
+    get { return startSigma; }
     set {
-      if (offsetSigma < 0.0) throw new ArgumentException("Negative sigma is not allowed.");
-      if (value != offsetSigma) {
-        offsetSigma = value;
+      if (startSigma < 0.0) throw new ArgumentException("Negative sigma is not allowed.");
+      if (value != startSigma) {
+        startSigma = value;
         OnChanged(EventArgs.Empty);
       }
     }
   }
-  [Storable]
-  private double lengthMu;
-  public double LengthMu {
-    get { return lengthMu; }
+  [Storable(OldName = "lengthMu")]
+  private double endMu;
+  public double EndMu {
+    get { return endMu; }
     set {
-      if (value != lengthMu) {
-        lengthMu = value;
+      if (value != endMu) {
+        endMu = value;
         OnChanged(EventArgs.Empty);
       }
     }
   }
-  [Storable]
-  private double lengthSigma;
-  public double LengthSigma {
-    get { return lengthSigma; }
+  [Storable(OldName = "lengthSigma")]
+  private double endSigma;
+  public double EndSigma {
+    get { return endSigma; }
     set {
-      if (lengthSigma < 0.0) throw new ArgumentException("Negative sigma is not allowed.");
-      if (value != lengthSigma) {
-        lengthSigma = value;
+      if (endSigma < 0.0) throw new ArgumentException("Negative sigma is not allowed.");
+      if (value != endSigma) {
+        endSigma = value;
         OnChanged(EventArgs.Empty); ;
       }
     }
   }
 
-  [Storable]
-  private double manipulatorOffsetMu;
-  public double ManipulatorOffsetMu {
-    get { return manipulatorOffsetMu; }
+  [Storable(OldName = "manipulatorOffsetMu")]
+  private double manipulatorStartMu;
+  public double ManipulatorStartMu {
+    get { return manipulatorStartMu; }
     set {
-      if (value != manipulatorOffsetMu) {
-        manipulatorOffsetMu = value;
+      if (value != manipulatorStartMu) {
+        manipulatorStartMu = value;
         OnChanged(EventArgs.Empty);
       }
     }
   }
-  [Storable]
-  private double manipulatorOffsetSigma;
-  public double ManipulatorOffsetSigma {
-    get { return manipulatorOffsetSigma; }
+  [Storable(OldName = "manipulatorOffsetSigma")]
+  private double manipulatorStartSigma;
+  public double ManipulatorStartSigma {
+    get { return manipulatorStartSigma; }
     set {
-      if (manipulatorOffsetSigma < 0.0) throw new ArgumentException("Negative sigma is not allowed.");
-      if (value != manipulatorOffsetSigma) {
-        manipulatorOffsetSigma = value;
+      if (manipulatorStartSigma < 0.0) throw new ArgumentException("Negative sigma is not allowed.");
+      if (value != manipulatorStartSigma) {
+        manipulatorStartSigma = value;
         OnChanged(EventArgs.Empty);
       }
     }
   }
-  [Storable]
-  private double manipulatorLengthMu;
-  public double ManipulatorLengthMu {
-    get { return manipulatorLengthMu; }
+  [Storable(OldName = "manipulatorLengthMu")]
+  private double manipulatorEndMu;
+  public double ManipulatorEndMu {
+    get { return manipulatorEndMu; }
     set {
-      if (value != manipulatorLengthMu) {
-        manipulatorLengthMu = value;
+      if (value != manipulatorEndMu) {
+        manipulatorEndMu = value;
         OnChanged(EventArgs.Empty);
       }
     }
   }
-  [Storable]
-  private double manipulatorLengthSigma;
-  public double ManipulatorLengthSigma {
-    get { return manipulatorLengthSigma; }
+  [Storable(OldName = "manipulatorLengthSigma")]
+  private double manipulatorEndSigma;
+  public double ManipulatorEndSigma {
+    get { return manipulatorEndSigma; }
     set {
-      if (manipulatorLengthSigma < 0.0) throw new ArgumentException("Negative sigma is not allowed.");
-      if (value != manipulatorLengthSigma) {
-        manipulatorLengthSigma = value;
+      if (manipulatorEndSigma < 0.0) throw new ArgumentException("Negative sigma is not allowed.");
+      if (value != manipulatorEndSigma) {
+        manipulatorEndSigma = value;
         OnChanged(EventArgs.Empty);
       }
     }
@@ -156,30 +156,30 @@ public abstract class WindowedSymbol : Symbol {
     enableWindowing = original.enableWindowing;
     allowRoundTrip = original.allowRoundTrip;
 
-    offsetMu = original.offsetMu;
-    offsetSigma = original.offsetSigma;
-    lengthMu = original.lengthMu;
-    lengthSigma = original.lengthSigma;
+    startMu = original.startMu;
+    startSigma = original.startSigma;
+    endMu = original.endMu;
+    endSigma = original.endSigma;
 
-    manipulatorOffsetMu = original.manipulatorOffsetMu;
-    manipulatorOffsetSigma = original.manipulatorOffsetSigma;
-    manipulatorLengthMu = original.manipulatorLengthMu;
-    manipulatorLengthSigma = original.manipulatorLengthSigma;
+    manipulatorStartMu = original.manipulatorStartMu;
+    manipulatorStartSigma = original.manipulatorStartSigma;
+    manipulatorEndMu = original.manipulatorEndMu;
+    manipulatorEndSigma = original.manipulatorEndSigma;
   }
   protected WindowedSymbol(string name, string description)
     : base(name, description) {
     enableWindowing = false;
     allowRoundTrip = false;
 
-    offsetMu = 0.0;
-    offsetSigma = 0.2;
-    lengthMu = 1.0;
-    lengthSigma = 0.2;
+    startMu = 0.0;
+    startSigma = 0.2;
+    endMu = 1.0;
+    endSigma = 0.2;
 
-    manipulatorOffsetMu = 0.0;
-    manipulatorOffsetSigma = 0.05;
-    manipulatorLengthMu = 0.0;
-    manipulatorLengthSigma = 0.05;
+    manipulatorStartMu = 0.0;
+    manipulatorStartSigma = 0.05;
+    manipulatorEndMu = 0.0;
+    manipulatorEndSigma = 0.05;
   }
 
   public override ISymbolicExpressionTreeNode CreateTreeNode() {

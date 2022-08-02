@@ -1110,12 +1110,18 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
     }
   }
   private static (int StartIdx, int EndIdx) GetIndices(int vectorLength, double start, double end, bool allowRoundTrip) {
-    int startIdx = (int)(start * vectorLength), endIdx = (int)(end * vectorLength);
+    int startIdx = IdxFromRelativeIdx(start, vectorLength), endIdx = IdxFromRelativeIdx(end, vectorLength);
     if (allowRoundTrip) {
       return (startIdx, endIdx);
     } else {
       return (Math.Min(startIdx, endIdx), Math.Max(startIdx, endIdx));
     }
+  }
+  // returns excl end
+  // equal range for generating empty and full vector
+  public static int IdxFromRelativeIdx(double relativeIdx, int length) { 
+    int idx = (int)(relativeIdx * (length + 1));
+    return Math.Max(Math.Min(idx, length), 0); // idx can be length+1 if relIdx == 1.0
   }
   
   private static int LongestStrikeAbove(DoubleVector v, double threshold) {

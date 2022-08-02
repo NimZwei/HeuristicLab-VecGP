@@ -54,17 +54,18 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       // 
       // OkButton
       // 
-      this.OkButton.Location = new System.Drawing.Point(303, 421);
+      this.OkButton.Location = new System.Drawing.Point(303, 506);
       // 
       // CancellationButton
       // 
-      this.CancellationButton.Location = new System.Drawing.Point(384, 421);
+      this.CancellationButton.Location = new System.Drawing.Point(384, 506);
       // 
       // ProblemDataSettingsGroupBox
       // 
       this.ProblemDataSettingsGroupBox.Controls.Add(this.TargetVariableInfoLabel);
       this.ProblemDataSettingsGroupBox.Controls.Add(this.TargetVariableLabel);
       this.ProblemDataSettingsGroupBox.Controls.Add(this.TargetVariableComboBox);
+      this.ProblemDataSettingsGroupBox.Size = new System.Drawing.Size(447, 279);
       this.ProblemDataSettingsGroupBox.Controls.SetChildIndex(this.PreviewLabel, 0);
       this.ProblemDataSettingsGroupBox.Controls.SetChildIndex(this.ShuffelInfoLabel, 0);
       this.ProblemDataSettingsGroupBox.Controls.SetChildIndex(this.TargetVariableComboBox, 0);
@@ -97,7 +98,7 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       this.TargetVariableLabel.TabIndex = 20;
       this.TargetVariableLabel.Text = "Target Variable:";
       // 
-      // TargetVariableinfoLabel
+      // TargetVariableInfoLabel
       // 
       this.TargetVariableInfoLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.TargetVariableInfoLabel.Location = new System.Drawing.Point(421, 22);
@@ -113,7 +114,7 @@ namespace HeuristicLab.Problems.Instances.DataAnalysis.Views {
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.ClientSize = new System.Drawing.Size(471, 456);
+      this.ClientSize = new System.Drawing.Size(471, 541);
       this.Name = "RegressionImportDialog";
       this.Text = "Regression CSV Import";
       ((System.ComponentModel.ISupportInitialize)(this.TrainingTestTrackBar)).EndInit();
