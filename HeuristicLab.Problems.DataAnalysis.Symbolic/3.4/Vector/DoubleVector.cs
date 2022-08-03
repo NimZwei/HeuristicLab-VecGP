@@ -157,7 +157,7 @@ public class DoubleVector : Vector<double> {
     : base(new double[count]) {
   }
   public DoubleVector(IEnumerable<double> values)  // clone
-  : base (values.ToArray()) { 
+    : base (values.ToArray()) { 
     //if (Length == 0) throw new InvalidOperationException("No empty vectors allowed");
   }
   

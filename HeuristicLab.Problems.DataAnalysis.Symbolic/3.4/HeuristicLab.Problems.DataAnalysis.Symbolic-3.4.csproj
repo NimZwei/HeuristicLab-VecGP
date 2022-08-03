@@ -127,6 +127,10 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Memory">
+      <HintPath>..\..\bin\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -135,6 +139,9 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="TorchSharp">
+      <HintPath>..\..\bin\TorchSharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Analyzers\SymbolicDataAnalysisBottomUpDiversityAnalyzer.cs" />
@@ -338,6 +345,7 @@
     <Compile Include="Vector\Symbols\VectorManipulations\Reorder.cs" />
     <Compile Include="Vector\Symbols\VectorManipulations\Roll.cs" />
     <Compile Include="Vector\Symbols\VectorManipulations\Scaling.cs" />
+    <Compile Include="Vector\TorchVectorInterpreter.cs" />
     <Compile Include="Vector\VectorTreeInterpreter.cs" />
     <Compile Include="Vector\Symbols\WindowedSymbol.cs" />
     <Compile Include="Vector\Symbols\WindowedSymbolTreeNode.cs" />

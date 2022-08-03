@@ -260,7 +260,7 @@ public class VectorTreeInterpreter : ParameterizedNamedItem, ISymbolicDataAnalys
     }
   }
 
-  private static InterpreterState PrepareInterpreterState(ISymbolicExpressionTree tree, IDataset dataset) {
+  internal static InterpreterState PrepareInterpreterState(ISymbolicExpressionTree tree, IDataset dataset) {
 
     byte MapSymbolToOpcode(ISymbolicExpressionTreeNode treeNode) {
       if (OpCodes.TryMapSymbolToOpCode(treeNode, out byte opCode)) {
